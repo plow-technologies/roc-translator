@@ -9,3 +9,7 @@ Maintainer  : Scott Murphy
 OpCode Table Lookup is different than TLP lookup
 
 | -}
+
+
+
+module Protocol.ROC.OpCodeTable () where
