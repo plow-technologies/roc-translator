@@ -1,27 +1,31 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType12 where
 
-import GHC.Generics
-import Data.Word
-import Data.Binary
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getWord8,Get)
+import Data.Word          (Word8)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (anyButNull,getTime)
 
 data PointType12 = PointType12 {
- pointType12Seconds                :: !PointType12Seconds                                     
-,pointType12Minutes                :: !PointType12Minutes                          
-,pointType12Hours                  :: !PointType12Hours                             
-,pointType12Day                    :: !PointType12Day                           
-,pointType12Month                  :: !PointType12Month                             
-,pointType12Year                   :: !PointType12Year                             
-,pointType12LeapYear               :: !PointType12LeapYear                             
-,pointType12DayofWeek              :: !PointType12DayofWeek                                 
-,pointType12TimeSMHDMY            :: !PointType12TimeSMHDMY                                                              
-,pointType12Century                :: !PointType12Century                             
-,pointType12EnableDaySavTime       :: !PointType12EnableDaySavTime                            
+ pointType12Seconds                :: !PointType12Seconds
+,pointType12Minutes                :: !PointType12Minutes
+,pointType12Hours                  :: !PointType12Hours
+,pointType12Day                    :: !PointType12Day
+,pointType12Month                  :: !PointType12Month
+,pointType12Year                   :: !PointType12Year
+,pointType12LeapYear               :: !PointType12LeapYear
+,pointType12DayofWeek              :: !PointType12DayofWeek
+,pointType12TimeSMHDMY             :: !PointType12TimeSMHDMY
+,pointType12Century                :: !PointType12Century
+,pointType12EnableDaySavTime       :: !PointType12EnableDaySavTime
                       
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType12Seconds            = Word8    
 type PointType12Minutes            = Word8            

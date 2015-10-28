@@ -1,17 +1,24 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType5 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           getWord32le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8,Word16,Word32)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType5 = PointType5 {
- pointType5PointTag                      :: !PointType5PointTag                                     
+ pointType5PointTag                      :: !PointType5PointTag
 ,pointType5Units                         :: !PointType5Units                          
 ,pointType5RateFlag                      :: !PointType5RateFlag                                
 ,pointType5RatePeriod                    :: !PointType5RatePeriod                           
@@ -35,10 +42,10 @@ data PointType5 = PointType5 {
 ,pointType5FreqHertz                     :: !PointType5FreqHertz                  
 
                       
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType5PointTag                  = BS.ByteString    
-type PointType5Units                     = BS.ByteString            
+type PointType5PointTag                  = ByteString    
+type PointType5Units                     = ByteString            
 type PointType5RateFlag                  = Word8           
 type PointType5RatePeriod                = Word8               
 type PointType5FilterTime                = Word8             

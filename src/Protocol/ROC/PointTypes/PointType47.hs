@@ -1,16 +1,22 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType47 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
---import Data.Int
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord32le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8,Word32)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (anyButNull)
 
 data PointType47 = PointType47 {
  pointType47FlowRatePerDay                        :: !PointType47FlowRatePerDay    
@@ -89,7 +95,7 @@ data PointType47 = PointType47 {
 ,pointType47DescActivePropCalc                    :: !PointType47DescActivePropCalc    
 ,pointType47UpStrmFlowingTemp                     :: !PointType47UpStrmFlowingTemp   
   
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType47FlowRatePerDay                    = Float           
 type PointType47EnergyRatePerDay                  = Float           
@@ -163,8 +169,8 @@ type PointType47FlowCalcCFG                       = Word8
 type PointType47FlowCalcAGA7PressMult             = Float           
 type PointType47FlowCalcAGA7TempMult              = Float           
 type PointType47FlowCalcAGA7CompMult              = Float           
-type PointType47DescActiveFlowCalc                = BS.ByteString           
-type PointType47DescActivePropCalc                = BS.ByteString           
+type PointType47DescActiveFlowCalc                = ByteString           
+type PointType47DescActivePropCalc                = ByteString           
 type PointType47UpStrmFlowingTemp                 = Float           
   
 pointType47Parser :: Get PointType47

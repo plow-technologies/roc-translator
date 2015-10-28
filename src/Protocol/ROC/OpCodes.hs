@@ -36,7 +36,7 @@ opCode10 cfg = let hostAddress = rocConfigHostAddress cfg
                    rocAddress = rocConfigRocAddress cfg
                    login = toLazyByteString.stringUtf8 $ rocLogin cfg
                    password = toLazyByteString.word16LE  $ rocPassword cfg
-               in  BS.pack (rocAddress ++ hostAddress ++ [10,3,0,0,44])
+               in  BS.pack (rocAddress ++ hostAddress ++ [10,3,0,0,3])
 
 opCode17 :: RocConfig -> BS.ByteString
 opCode17 cfg = let hostAddress = rocConfigHostAddress cfg

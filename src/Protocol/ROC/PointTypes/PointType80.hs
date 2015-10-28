@@ -1,148 +1,156 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType80 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           getWord32le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8,Word16,Word32)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (anyButNull)
 
 
 data PointType80 = PointType80 {
   
- pointType80MACAddress                                   :: !PointType80MACAddress                                           
-,pointType80IPAddress                                    :: !PointType80IPAddress                                                           
-,pointType80SubnetAddress                                :: !PointType80SubnetAddress                                                      
-,pointType80GatewayAddress                               :: !PointType80GatewayAddress                                                     
-,pointType80ROCProtocolPortNum                           :: !PointType80ROCProtocolPortNum                                       
-,pointType80NumActiveROCConnections                      :: !PointType80NumActiveROCConnections                                       
-,pointType80ROCProtocolTimeout                           :: !PointType80ROCProtocolTimeout                                                   
-,pointType80ROCProtocolConnection                        :: !PointType80ROCProtocolConnection                                       
-,pointType80NotUsed1                                     :: !PointType80NotUsed1                                         
-,pointType80ModbusPortNum                                :: !PointType80ModbusPortNum                                                    
-,pointType80NumActiveModbusConnections                   :: !PointType80NumActiveModbusConnections                                                 
-,pointType80ModbusTimeout                                :: !PointType80ModbusTimeout                                                                      
-,pointType80ModbusConnection                             :: !PointType80ModbusConnection                                                            
-,pointType80NotUsed2                                     :: !PointType80NotUsed2                                                               
-,pointType80ROCModbusIPSelect                            :: !PointType80ROCModbusIPSelect                                                                     
-,pointType80ModbusOverIPSlaveAddress                     :: !PointType80ModbusOverIPSlaveAddress                                                                    
-,pointType80ModbusMasterTCPConnectionTimeout             :: !PointType80ModbusMasterTCPConnectionTimeout                                                                       
-,pointType80ModbusMasterTCPCloseTimeout                  :: !PointType80ModbusMasterTCPCloseTimeout                                                             
-,pointType80Reserved1                                    :: !PointType80Reserved1                                                            
-,pointType80Reserved2                                    :: !PointType80Reserved2                                                                       
-,pointType80MasterTable1ModbusMasterTCPOption            :: !PointType80MasterTable1ModbusMasterTCPOption                                                                      
-,pointType80IPAddressTable1Server1                       :: !PointType80IPAddressTable1Server1                                                            
-,pointType80PortNumTable1Server1                         :: !PointType80PortNumTable1Server1                                               
-,pointType80IPAddressTable1Server2                       :: !PointType80IPAddressTable1Server2                                              
-,pointType80PortNumTable1Server2                         :: !PointType80PortNumTable1Server2                                                            
-,pointType80IPAddressTable1Server3                       :: !PointType80IPAddressTable1Server3                                                      
-,pointType80PortNumTable1Server3                         :: !PointType80PortNumTable1Server3                                                                 
-,pointType80IPAddressTable1Server4                       :: !PointType80IPAddressTable1Server4                                                         
-,pointType80PortNumTable1Server4                         :: !PointType80PortNumTable1Server4                                                       
-,pointType80IPAddressTable1Server5                       :: !PointType80IPAddressTable1Server5                                                                  
-,pointType80PortNumTable1Server5                         :: !PointType80PortNumTable1Server5                                                               
-,pointType80IPAddressTable1Server6                       :: !PointType80IPAddressTable1Server6                                                               
-,pointType80PortNumTable1Server6                         :: !PointType80PortNumTable1Server6                                                       
-,pointType80IPAddressTable1Server7                       :: !PointType80IPAddressTable1Server7                                                        
-,pointType80PortNumTable1Server7                         :: !PointType80PortNumTable1Server7                                                                
-,pointType80IPAddressTable1Server8                       :: !PointType80IPAddressTable1Server8                                                             
-,pointType80PortNumTable1Server8                         :: !PointType80PortNumTable1Server8                                                             
-,pointType80IPAddressTable1Server9                       :: !PointType80IPAddressTable1Server9                                                            
-,pointType80PortNumTable1Server9                         :: !PointType80PortNumTable1Server9                                                        
-,pointType80IPAddressTable1Server10                      :: !PointType80IPAddressTable1Server10                                                                
-,pointType80PortNumTable1Server10                        :: !PointType80PortNumTable1Server10                                                               
-,pointType80IPAddressTable1Server11                      :: !PointType80IPAddressTable1Server11                                                                   
-,pointType80PortNumTable1Server11                        :: !PointType80PortNumTable1Server11                                                        
-,pointType80IPAddressTable1Server12                      :: !PointType80IPAddressTable1Server12                                                      
-,pointType80PortNumTable1Server12                        :: !PointType80PortNumTable1Server12                                                                  
-,pointType80IPAddressTable1Server13                      :: !PointType80IPAddressTable1Server13                                                                 
-,pointType80PortNumTable1Server13                        :: !PointType80PortNumTable1Server13                                                                  
-,pointType80IPAddressTable1Server14                      :: !PointType80IPAddressTable1Server14                                                          
-,pointType80PortNumTable1Server14                        :: !PointType80PortNumTable1Server14                                                        
-,pointType80IPAddressTable1Server15                      :: !PointType80IPAddressTable1Server15                                                               
-,pointType80PortNumTable1Server15                        :: !PointType80PortNumTable1Server15                                                                
-,pointType80IPAddressTable1Server16                      :: !PointType80IPAddressTable1Server16                                                                 
-,pointType80PortNumTable1Server16                        :: !PointType80PortNumTable1Server16                                                              
-,pointType80IPAddressTable1Server17                      :: !PointType80IPAddressTable1Server17                                                         
-,pointType80PortNumTable1Server17                        :: !PointType80PortNumTable1Server17                                                                    
-,pointType80IPAddressTable1Server18                      :: !PointType80IPAddressTable1Server18                                                                
-,pointType80PortNumTable1Server18                        :: !PointType80PortNumTable1Server18                                                                
-,pointType80IPAddressTable1Server19                      :: !PointType80IPAddressTable1Server19                                                                 
-,pointType80PortNumTable1Server19                        :: !PointType80PortNumTable1Server19                                             
-,pointType80IPAddressTable1Server20                      :: !PointType80IPAddressTable1Server20                                                               
-,pointType80PortNumTable1Server20                        :: !PointType80PortNumTable1Server20                                                     
-,pointType80IPAddressTable1Server21                      :: !PointType80IPAddressTable1Server21                                                           
-,pointType80PortNumTable1Server21                        :: !PointType80PortNumTable1Server21                                                                  
-,pointType80IPAddressTable1Server22                      :: !PointType80IPAddressTable1Server22                                                               
-,pointType80PortNumTable1Server22                        :: !PointType80PortNumTable1Server22                                                                   
-,pointType80IPAddressTable1Server23                      :: !PointType80IPAddressTable1Server23                                                             
-,pointType80PortNumTable1Server23                        :: !PointType80PortNumTable1Server23                                                         
-,pointType80IPAddressTable1Server24                      :: !PointType80IPAddressTable1Server24                                                             
-,pointType80PortNumTable1Server24                        :: !PointType80PortNumTable1Server24                                                                 
-,pointType80IPAddressTable1Server25                      :: !PointType80IPAddressTable1Server25                                                                    
-,pointType80PortNumTable1Server25                        :: !PointType80PortNumTable1Server25                                                             
-,pointType80MasterTable2ModbusMasterTCPOption            :: !PointType80MasterTable2ModbusMasterTCPOption                                                       
-,pointType80IPAddressTable2Server1                       :: !PointType80IPAddressTable2Server1                                                                   
-,pointType80PortNumTable2Server1                         :: !PointType80PortNumTable2Server1                                                                  
-,pointType80IPAddressTable2Server2                       :: !PointType80IPAddressTable2Server2                                                               
-,pointType80PortNumTable2Server2                         :: !PointType80PortNumTable2Server2                                                           
-,pointType80IPAddressTable2Server3                       :: !PointType80IPAddressTable2Server3                                                        
-,pointType80PortNumTable2Server3                         :: !PointType80PortNumTable2Server3                                                                    
-,pointType80IPAddressTable2Server4                       :: !PointType80IPAddressTable2Server4                                                               
-,pointType80PortNumTable2Server4                         :: !PointType80PortNumTable2Server4                                                                 
-,pointType80IPAddressTable2Server5                       :: !PointType80IPAddressTable2Server5                                                             
-,pointType80PortNumTable2Server5                         :: !PointType80PortNumTable2Server5                                                          
-,pointType80IPAddressTable2Server6                       :: !PointType80IPAddressTable2Server6                                                                   
-,pointType80PortNumTable2Server6                         :: !PointType80PortNumTable2Server6                                                              
-,pointType80IPAddressTable2Server7                       :: !PointType80IPAddressTable2Server7                                                                   
-,pointType80PortNumTable2Server7                         :: !PointType80PortNumTable2Server7                                                          
-,pointType80IPAddressTable2Server8                       :: !PointType80IPAddressTable2Server8                                                         
-,pointType80PortNumTable2Server8                         :: !PointType80PortNumTable2Server8                                                                 
-,pointType80IPAddressTable2Server9                       :: !PointType80IPAddressTable2Server9                                                                 
-,pointType80PortNumTable2Server9                         :: !PointType80PortNumTable2Server9                                                                    
-,pointType80IPAddressTable2Server10                      :: !PointType80IPAddressTable2Server10                                                             
-,pointType80PortNumTable2Server10                        :: !PointType80PortNumTable2Server10                                                       
-,pointType80IPAddressTable2Server11                      :: !PointType80IPAddressTable2Server11                                                               
-,pointType80PortNumTable2Server11                        :: !PointType80PortNumTable2Server11                                                                  
-,pointType80IPAddressTable2Server12                      :: !PointType80IPAddressTable2Server12                                                                  
-,pointType80PortNumTable2Server12                        :: !PointType80PortNumTable2Server12                                                           
-,pointType80IPAddressTable2Server13                      :: !PointType80IPAddressTable2Server13                                                     
-,pointType80PortNumTable2Server13                        :: !PointType80PortNumTable2Server13                                                                    
-,pointType80IPAddressTable2Server14                      :: !PointType80IPAddressTable2Server14                                                                  
-,pointType80PortNumTable2Server14                        :: !PointType80PortNumTable2Server14                                                                  
-,pointType80IPAddressTable2Server15                      :: !PointType80IPAddressTable2Server15                                                             
-,pointType80PortNumTable2Server15                        :: !PointType80PortNumTable2Server15                                                           
-,pointType80IPAddressTable2Server16                      :: !PointType80IPAddressTable2Server16                                                                
-,pointType80PortNumTable2Server16                        :: !PointType80PortNumTable2Server16                                                                
-,pointType80IPAddressTable2Server17                      :: !PointType80IPAddressTable2Server17                                                                    
-,pointType80PortNumTable2Server17                        :: !PointType80PortNumTable2Server17                                                               
-,pointType80IPAddressTable2Server18                      :: !PointType80IPAddressTable2Server18                                                          
-,pointType80PortNumTable2Server18                        :: !PointType80PortNumTable2Server18                                                                  
-,pointType80IPAddressTable2Server19                      :: !PointType80IPAddressTable2Server19                                                                  
-,pointType80PortNumTable2Server19                        :: !PointType80PortNumTable2Server19                                                           
-,pointType80IPAddressTable2Server20                      :: !PointType80IPAddressTable2Server20                                                     
-,pointType80PortNumTable2Server20                        :: !PointType80PortNumTable2Server20                                                                    
-,pointType80IPAddressTable2Server21                      :: !PointType80IPAddressTable2Server21                                                                  
-,pointType80PortNumTable2Server21                        :: !PointType80PortNumTable2Server21                                                                  
-,pointType80IPAddressTable2Server22                      :: !PointType80IPAddressTable2Server22                                                             
-,pointType80PortNumTable2Server22                        :: !PointType80PortNumTable2Server22                                                           
-,pointType80IPAddressTable2Server23                      :: !PointType80IPAddressTable2Server23                                                                
-,pointType80PortNumTable2Server23                        :: !PointType80PortNumTable2Server23                                                                
-,pointType80IPAddressTable2Server24                      :: !PointType80IPAddressTable2Server24                                                                    
-,pointType80PortNumTable2Server24                        :: !PointType80PortNumTable2Server24                                                               
-,pointType80IPAddressTable2Server25                      :: !PointType80IPAddressTable2Server25                                                          
-,pointType80PortNumTable2Server25                        :: !PointType80PortNumTable2Server25                                                                                                  
+ pointType80MACAddress                                   :: !PointType80MACAddress
+,pointType80IPAddress                                    :: !PointType80IPAddress
+,pointType80SubnetAddress                                :: !PointType80SubnetAddress
+,pointType80GatewayAddress                               :: !PointType80GatewayAddress
+,pointType80ROCProtocolPortNum                           :: !PointType80ROCProtocolPortNum
+,pointType80NumActiveROCConnections                      :: !PointType80NumActiveROCConnections
+,pointType80ROCProtocolTimeout                           :: !PointType80ROCProtocolTimeout
+,pointType80ROCProtocolConnection                        :: !PointType80ROCProtocolConnection
+,pointType80NotUsed1                                     :: !PointType80NotUsed1
+,pointType80ModbusPortNum                                :: !PointType80ModbusPortNum
+,pointType80NumActiveModbusConnections                   :: !PointType80NumActiveModbusConnections
+,pointType80ModbusTimeout                                :: !PointType80ModbusTimeout
+,pointType80ModbusConnection                             :: !PointType80ModbusConnection
+,pointType80NotUsed2                                     :: !PointType80NotUsed2
+,pointType80ROCModbusIPSelect                            :: !PointType80ROCModbusIPSelect
+,pointType80ModbusOverIPSlaveAddress                     :: !PointType80ModbusOverIPSlaveAddress
+,pointType80ModbusMasterTCPConnectionTimeout             :: !PointType80ModbusMasterTCPConnectionTimeout
+,pointType80ModbusMasterTCPCloseTimeout                  :: !PointType80ModbusMasterTCPCloseTimeout
+,pointType80Reserved1                                    :: !PointType80Reserved1
+,pointType80Reserved2                                    :: !PointType80Reserved2
+,pointType80MasterTable1ModbusMasterTCPOption            :: !PointType80MasterTable1ModbusMasterTCPOption
+,pointType80IPAddressTable1Server1                       :: !PointType80IPAddressTable1Server1
+,pointType80PortNumTable1Server1                         :: !PointType80PortNumTable1Server1
+,pointType80IPAddressTable1Server2                       :: !PointType80IPAddressTable1Server2
+,pointType80PortNumTable1Server2                         :: !PointType80PortNumTable1Server2
+,pointType80IPAddressTable1Server3                       :: !PointType80IPAddressTable1Server3
+,pointType80PortNumTable1Server3                         :: !PointType80PortNumTable1Server3
+,pointType80IPAddressTable1Server4                       :: !PointType80IPAddressTable1Server4
+,pointType80PortNumTable1Server4                         :: !PointType80PortNumTable1Server4
+,pointType80IPAddressTable1Server5                       :: !PointType80IPAddressTable1Server5
+,pointType80PortNumTable1Server5                         :: !PointType80PortNumTable1Server5
+,pointType80IPAddressTable1Server6                       :: !PointType80IPAddressTable1Server6
+,pointType80PortNumTable1Server6                         :: !PointType80PortNumTable1Server6
+,pointType80IPAddressTable1Server7                       :: !PointType80IPAddressTable1Server7
+,pointType80PortNumTable1Server7                         :: !PointType80PortNumTable1Server7
+,pointType80IPAddressTable1Server8                       :: !PointType80IPAddressTable1Server8
+,pointType80PortNumTable1Server8                         :: !PointType80PortNumTable1Server8
+,pointType80IPAddressTable1Server9                       :: !PointType80IPAddressTable1Server9
+,pointType80PortNumTable1Server9                         :: !PointType80PortNumTable1Server9
+,pointType80IPAddressTable1Server10                      :: !PointType80IPAddressTable1Server10
+,pointType80PortNumTable1Server10                        :: !PointType80PortNumTable1Server10
+,pointType80IPAddressTable1Server11                      :: !PointType80IPAddressTable1Server11
+,pointType80PortNumTable1Server11                        :: !PointType80PortNumTable1Server11
+,pointType80IPAddressTable1Server12                      :: !PointType80IPAddressTable1Server12
+,pointType80PortNumTable1Server12                        :: !PointType80PortNumTable1Server12
+,pointType80IPAddressTable1Server13                      :: !PointType80IPAddressTable1Server13
+,pointType80PortNumTable1Server13                        :: !PointType80PortNumTable1Server13
+,pointType80IPAddressTable1Server14                      :: !PointType80IPAddressTable1Server14
+,pointType80PortNumTable1Server14                        :: !PointType80PortNumTable1Server14
+,pointType80IPAddressTable1Server15                      :: !PointType80IPAddressTable1Server15
+,pointType80PortNumTable1Server15                        :: !PointType80PortNumTable1Server15
+,pointType80IPAddressTable1Server16                      :: !PointType80IPAddressTable1Server16
+,pointType80PortNumTable1Server16                        :: !PointType80PortNumTable1Server16
+,pointType80IPAddressTable1Server17                      :: !PointType80IPAddressTable1Server17
+,pointType80PortNumTable1Server17                        :: !PointType80PortNumTable1Server17
+,pointType80IPAddressTable1Server18                      :: !PointType80IPAddressTable1Server18
+,pointType80PortNumTable1Server18                        :: !PointType80PortNumTable1Server18
+,pointType80IPAddressTable1Server19                      :: !PointType80IPAddressTable1Server19
+,pointType80PortNumTable1Server19                        :: !PointType80PortNumTable1Server19
+,pointType80IPAddressTable1Server20                      :: !PointType80IPAddressTable1Server20
+,pointType80PortNumTable1Server20                        :: !PointType80PortNumTable1Server20
+,pointType80IPAddressTable1Server21                      :: !PointType80IPAddressTable1Server21
+,pointType80PortNumTable1Server21                        :: !PointType80PortNumTable1Server21
+,pointType80IPAddressTable1Server22                      :: !PointType80IPAddressTable1Server22
+,pointType80PortNumTable1Server22                        :: !PointType80PortNumTable1Server22
+,pointType80IPAddressTable1Server23                      :: !PointType80IPAddressTable1Server23
+,pointType80PortNumTable1Server23                        :: !PointType80PortNumTable1Server23
+,pointType80IPAddressTable1Server24                      :: !PointType80IPAddressTable1Server24
+,pointType80PortNumTable1Server24                        :: !PointType80PortNumTable1Server24
+,pointType80IPAddressTable1Server25                      :: !PointType80IPAddressTable1Server25
+,pointType80PortNumTable1Server25                        :: !PointType80PortNumTable1Server25
+,pointType80MasterTable2ModbusMasterTCPOption            :: !PointType80MasterTable2ModbusMasterTCPOption
+,pointType80IPAddressTable2Server1                       :: !PointType80IPAddressTable2Server1
+,pointType80PortNumTable2Server1                         :: !PointType80PortNumTable2Server1
+,pointType80IPAddressTable2Server2                       :: !PointType80IPAddressTable2Server2
+,pointType80PortNumTable2Server2                         :: !PointType80PortNumTable2Server2
+,pointType80IPAddressTable2Server3                       :: !PointType80IPAddressTable2Server3
+,pointType80PortNumTable2Server3                         :: !PointType80PortNumTable2Server3
+,pointType80IPAddressTable2Server4                       :: !PointType80IPAddressTable2Server4
+,pointType80PortNumTable2Server4                         :: !PointType80PortNumTable2Server4
+,pointType80IPAddressTable2Server5                       :: !PointType80IPAddressTable2Server5
+,pointType80PortNumTable2Server5                         :: !PointType80PortNumTable2Server5
+,pointType80IPAddressTable2Server6                       :: !PointType80IPAddressTable2Server6
+,pointType80PortNumTable2Server6                         :: !PointType80PortNumTable2Server6
+,pointType80IPAddressTable2Server7                       :: !PointType80IPAddressTable2Server7
+,pointType80PortNumTable2Server7                         :: !PointType80PortNumTable2Server7
+,pointType80IPAddressTable2Server8                       :: !PointType80IPAddressTable2Server8
+,pointType80PortNumTable2Server8                         :: !PointType80PortNumTable2Server8
+,pointType80IPAddressTable2Server9                       :: !PointType80IPAddressTable2Server9
+,pointType80PortNumTable2Server9                         :: !PointType80PortNumTable2Server9
+,pointType80IPAddressTable2Server10                      :: !PointType80IPAddressTable2Server10
+,pointType80PortNumTable2Server10                        :: !PointType80PortNumTable2Server10
+,pointType80IPAddressTable2Server11                      :: !PointType80IPAddressTable2Server11
+,pointType80PortNumTable2Server11                        :: !PointType80PortNumTable2Server11
+,pointType80IPAddressTable2Server12                      :: !PointType80IPAddressTable2Server12
+,pointType80PortNumTable2Server12                        :: !PointType80PortNumTable2Server12
+,pointType80IPAddressTable2Server13                      :: !PointType80IPAddressTable2Server13
+,pointType80PortNumTable2Server13                        :: !PointType80PortNumTable2Server13
+,pointType80IPAddressTable2Server14                      :: !PointType80IPAddressTable2Server14
+,pointType80PortNumTable2Server14                        :: !PointType80PortNumTable2Server14
+,pointType80IPAddressTable2Server15                      :: !PointType80IPAddressTable2Server15
+,pointType80PortNumTable2Server15                        :: !PointType80PortNumTable2Server15
+,pointType80IPAddressTable2Server16                      :: !PointType80IPAddressTable2Server16
+,pointType80PortNumTable2Server16                        :: !PointType80PortNumTable2Server16
+,pointType80IPAddressTable2Server17                      :: !PointType80IPAddressTable2Server17
+,pointType80PortNumTable2Server17                        :: !PointType80PortNumTable2Server17
+,pointType80IPAddressTable2Server18                      :: !PointType80IPAddressTable2Server18
+,pointType80PortNumTable2Server18                        :: !PointType80PortNumTable2Server18
+,pointType80IPAddressTable2Server19                      :: !PointType80IPAddressTable2Server19
+,pointType80PortNumTable2Server19                        :: !PointType80PortNumTable2Server19
+,pointType80IPAddressTable2Server20                      :: !PointType80IPAddressTable2Server20
+,pointType80PortNumTable2Server20                        :: !PointType80PortNumTable2Server20
+,pointType80IPAddressTable2Server21                      :: !PointType80IPAddressTable2Server21
+,pointType80PortNumTable2Server21                        :: !PointType80PortNumTable2Server21
+,pointType80IPAddressTable2Server22                      :: !PointType80IPAddressTable2Server22
+,pointType80PortNumTable2Server22                        :: !PointType80PortNumTable2Server22
+,pointType80IPAddressTable2Server23                      :: !PointType80IPAddressTable2Server23
+,pointType80PortNumTable2Server23                        :: !PointType80PortNumTable2Server23
+,pointType80IPAddressTable2Server24                      :: !PointType80IPAddressTable2Server24
+,pointType80PortNumTable2Server24                        :: !PointType80PortNumTable2Server24
+,pointType80IPAddressTable2Server25                      :: !PointType80IPAddressTable2Server25
+,pointType80PortNumTable2Server25                        :: !PointType80PortNumTable2Server25
   
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
                                   
-type PointType80MACAddress                                           = BS.ByteString                                                                     
-type PointType80IPAddress                                            = BS.ByteString                                                                                        
-type PointType80SubnetAddress                                        = BS.ByteString                                                                              
-type PointType80GatewayAddress                                       = BS.ByteString                                                                               
+type PointType80MACAddress                                           = ByteString                                                                     
+type PointType80IPAddress                                            = ByteString                                                                                        
+type PointType80SubnetAddress                                        = ByteString                                                                              
+type PointType80GatewayAddress                                       = ByteString                                                                               
 type PointType80ROCProtocolPortNum                                   = Word16                                                              
 type PointType80NumActiveROCConnections                              = Word8                                                                             
 type PointType80ROCProtocolTimeout                                   = Float                                                          
@@ -160,106 +168,106 @@ type PointType80ModbusMasterTCPCloseTimeout                          = Word8
 type PointType80Reserved1                                            = Word8                                                                                               
 type PointType80Reserved2                                            = Word8                                                                                                
 type PointType80MasterTable1ModbusMasterTCPOption                    = Bool                                                                                       
-type PointType80IPAddressTable1Server1                               = BS.ByteString                                                                        
+type PointType80IPAddressTable1Server1                               = ByteString                                                                        
 type PointType80PortNumTable1Server1                                 = Word16                                                                    
-type PointType80IPAddressTable1Server2                               = BS.ByteString                                                                                       
+type PointType80IPAddressTable1Server2                               = ByteString                                                                                       
 type PointType80PortNumTable1Server2                                 = Word16                                                                                     
-type PointType80IPAddressTable1Server3                               = BS.ByteString                                                                                            
+type PointType80IPAddressTable1Server3                               = ByteString                                                                                            
 type PointType80PortNumTable1Server3                                 = Word16                                                                                         
-type PointType80IPAddressTable1Server4                               = BS.ByteString                                                                                  
+type PointType80IPAddressTable1Server4                               = ByteString                                                                                  
 type PointType80PortNumTable1Server4                                 = Word16                                                                                                     
-type PointType80IPAddressTable1Server5                               = BS.ByteString                                                                                          
+type PointType80IPAddressTable1Server5                               = ByteString                                                                                          
 type PointType80PortNumTable1Server5                                 = Word16                                                                                               
-type PointType80IPAddressTable1Server6                               = BS.ByteString                                                                              
+type PointType80IPAddressTable1Server6                               = ByteString                                                                              
 type PointType80PortNumTable1Server6                                 = Word16                                                                                           
-type PointType80IPAddressTable1Server7                               = BS.ByteString                                                                                          
+type PointType80IPAddressTable1Server7                               = ByteString                                                                                          
 type PointType80PortNumTable1Server7                                 = Word16                                                                                             
-type PointType80IPAddressTable1Server8                               = BS.ByteString                                                                                    
+type PointType80IPAddressTable1Server8                               = ByteString                                                                                    
 type PointType80PortNumTable1Server8                                 = Word16                                                                                               
-type PointType80IPAddressTable1Server9                               = BS.ByteString                                                                                    
+type PointType80IPAddressTable1Server9                               = ByteString                                                                                    
 type PointType80PortNumTable1Server9                                 = Word16                                                                                                 
-type PointType80IPAddressTable1Server10                              = BS.ByteString                                                                                          
+type PointType80IPAddressTable1Server10                              = ByteString                                                                                          
 type PointType80PortNumTable1Server10                                = Word16                                                                                                       
-type PointType80IPAddressTable1Server11                              = BS.ByteString                                                                                
+type PointType80IPAddressTable1Server11                              = ByteString                                                                                
 type PointType80PortNumTable1Server11                                = Word16                                                                                       
-type PointType80IPAddressTable1Server12                              = BS.ByteString                                                                                              
+type PointType80IPAddressTable1Server12                              = ByteString                                                                                              
 type PointType80PortNumTable1Server12                                = Word16                                                                                                     
-type PointType80IPAddressTable1Server13                              = BS.ByteString                                                                                              
+type PointType80IPAddressTable1Server13                              = ByteString                                                                                              
 type PointType80PortNumTable1Server13                                = Word16                                                                                           
-type PointType80IPAddressTable1Server14                              = BS.ByteString                                                                                    
+type PointType80IPAddressTable1Server14                              = ByteString                                                                                    
 type PointType80PortNumTable1Server14                                = Word16                                                                                               
-type PointType80IPAddressTable1Server15                              = BS.ByteString                                                                                            
+type PointType80IPAddressTable1Server15                              = ByteString                                                                                            
 type PointType80PortNumTable1Server15                                = Word16                                                                                                 
-type PointType80IPAddressTable1Server16                              = BS.ByteString                                                                                          
+type PointType80IPAddressTable1Server16                              = ByteString                                                                                          
 type PointType80PortNumTable1Server16                                = Word16                                                                                           
-type PointType80IPAddressTable1Server17                              = BS.ByteString                                                                                                
+type PointType80IPAddressTable1Server17                              = ByteString                                                                                                
 type PointType80PortNumTable1Server17                                = Word16                                                                                                 
-type PointType80IPAddressTable1Server18                              = BS.ByteString                                                                                            
+type PointType80IPAddressTable1Server18                              = ByteString                                                                                            
 type PointType80PortNumTable1Server18                                = Word16                                                                                                     
-type PointType80IPAddressTable1Server19                              = BS.ByteString                                                                      
+type PointType80IPAddressTable1Server19                              = ByteString                                                                      
 type PointType80PortNumTable1Server19                                = Word16                                                                                                
-type PointType80IPAddressTable1Server20                              = BS.ByteString                                                                             
+type PointType80IPAddressTable1Server20                              = ByteString                                                                             
 type PointType80PortNumTable1Server20                                = Word16                                                                                    
-type PointType80IPAddressTable1Server21                              = BS.ByteString                                                                                           
+type PointType80IPAddressTable1Server21                              = ByteString                                                                                           
 type PointType80PortNumTable1Server21                                = Word16                                                                                                
-type PointType80IPAddressTable1Server22                              = BS.ByteString                                                                                               
+type PointType80IPAddressTable1Server22                              = ByteString                                                                                               
 type PointType80PortNumTable1Server22                                = Word16                                                                                             
-type PointType80IPAddressTable1Server23                              = BS.ByteString                                                                                  
+type PointType80IPAddressTable1Server23                              = ByteString                                                                                  
 type PointType80PortNumTable1Server23                                = Word16                                                                                               
-type PointType80IPAddressTable1Server24                              = BS.ByteString                                                                                             
+type PointType80IPAddressTable1Server24                              = ByteString                                                                                             
 type PointType80PortNumTable1Server24                                = Word16                                                                                                      
-type PointType80IPAddressTable1Server25                              = BS.ByteString                                                                                     
+type PointType80IPAddressTable1Server25                              = ByteString                                                                                     
 type PointType80PortNumTable1Server25                                = Word16                                                                                         
 type PointType80MasterTable2ModbusMasterTCPOption                    = Bool                                                                                          
-type PointType80IPAddressTable2Server1                               = BS.ByteString                                                                                             
+type PointType80IPAddressTable2Server1                               = ByteString                                                                                             
 type PointType80PortNumTable2Server1                                 = Word16                                                                                               
-type PointType80IPAddressTable2Server2                               = BS.ByteString                                                                                      
+type PointType80IPAddressTable2Server2                               = ByteString                                                                                      
 type PointType80PortNumTable2Server2                                 = Word16                                                                                           
-type PointType80IPAddressTable2Server3                               = BS.ByteString                                                                                               
+type PointType80IPAddressTable2Server3                               = ByteString                                                                                               
 type PointType80PortNumTable2Server3                                 = Word16                                                                                               
-type PointType80IPAddressTable2Server4                               = BS.ByteString                                                                                        
+type PointType80IPAddressTable2Server4                               = ByteString                                                                                        
 type PointType80PortNumTable2Server4                                 = Word16                                                                                                
-type PointType80IPAddressTable2Server5                               = BS.ByteString                                                                                    
+type PointType80IPAddressTable2Server5                               = ByteString                                                                                    
 type PointType80PortNumTable2Server5                                 = Word16                                                                                                   
-type PointType80IPAddressTable2Server6                               = BS.ByteString                                                                                     
+type PointType80IPAddressTable2Server6                               = ByteString                                                                                     
 type PointType80PortNumTable2Server6                                 = Word16                                                                                                      
-type PointType80IPAddressTable2Server7                               = BS.ByteString                                                                                      
+type PointType80IPAddressTable2Server7                               = ByteString                                                                                      
 type PointType80PortNumTable2Server7                                 = Word16                                                                                          
-type PointType80IPAddressTable2Server8                               = BS.ByteString                                                                                            
+type PointType80IPAddressTable2Server8                               = ByteString                                                                                            
 type PointType80PortNumTable2Server8                                 = Word16                                                                                                     
-type PointType80IPAddressTable2Server9                               = BS.ByteString                                                                                            
+type PointType80IPAddressTable2Server9                               = ByteString                                                                                            
 type PointType80PortNumTable2Server9                                 = Word16                                                                                              
-type PointType80IPAddressTable2Server10                              = BS.ByteString                                                                                   
+type PointType80IPAddressTable2Server10                              = ByteString                                                                                   
 type PointType80PortNumTable2Server10                                = Word16                                                                                                   
-type PointType80IPAddressTable2Server11                              = BS.ByteString                                                                                              
+type PointType80IPAddressTable2Server11                              = ByteString                                                                                              
 type PointType80PortNumTable2Server11                                = Word16                                                                                                   
-type PointType80IPAddressTable2Server12                              = BS.ByteString                                                                                       
+type PointType80IPAddressTable2Server12                              = ByteString                                                                                       
 type PointType80PortNumTable2Server12                                = Word16                                                                                     
-type PointType80IPAddressTable2Server13                              = BS.ByteString                                                                                                
+type PointType80IPAddressTable2Server13                              = ByteString                                                                                                
 type PointType80PortNumTable2Server13                                = Word16                                                                                                  
-type PointType80IPAddressTable2Server14                              = BS.ByteString                                                                                              
+type PointType80IPAddressTable2Server14                              = ByteString                                                                                              
 type PointType80PortNumTable2Server14                                = Word16                                                                                               
-type PointType80IPAddressTable2Server15                              = BS.ByteString                                                                                       
+type PointType80IPAddressTable2Server15                              = ByteString                                                                                       
 type PointType80PortNumTable2Server15                                = Word16                                                                                                 
-type PointType80IPAddressTable2Server16                              = BS.ByteString                                                                                            
+type PointType80IPAddressTable2Server16                              = ByteString                                                                                            
 type PointType80PortNumTable2Server16                                = Word16                                                                                                        
-type PointType80IPAddressTable2Server17                              = BS.ByteString                                                                                          
+type PointType80IPAddressTable2Server17                              = ByteString                                                                                          
 type PointType80PortNumTable2Server17                                = Word16                                                                                           
-type PointType80IPAddressTable2Server18                              = BS.ByteString                                                                                          
+type PointType80IPAddressTable2Server18                              = ByteString                                                                                          
 type PointType80PortNumTable2Server18                                = Word16                                                                                             
-type PointType80IPAddressTable2Server19                              = BS.ByteString                                                                                       
+type PointType80IPAddressTable2Server19                              = ByteString                                                                                       
 type PointType80PortNumTable2Server19                                = Word16                                                                                     
-type PointType80IPAddressTable2Server20                              = BS.ByteString                                                                                                
+type PointType80IPAddressTable2Server20                              = ByteString                                                                                                
 type PointType80PortNumTable2Server20                                = Word16                                                                                                  
-type PointType80IPAddressTable2Server21                              = BS.ByteString                                                                                              
+type PointType80IPAddressTable2Server21                              = ByteString                                                                                              
 type PointType80PortNumTable2Server21                                = Word16                                                                                               
-type PointType80IPAddressTable2Server22                              = BS.ByteString                                                                                       
+type PointType80IPAddressTable2Server22                              = ByteString                                                                                       
 type PointType80PortNumTable2Server22                                = Word16                                                                                                 
-type PointType80IPAddressTable2Server23                              = BS.ByteString                                                                                            
+type PointType80IPAddressTable2Server23                              = ByteString                                                                                            
 type PointType80PortNumTable2Server23                                = Word16                                                                                                        
-type PointType80IPAddressTable2Server24                              = BS.ByteString                                                                                          
+type PointType80IPAddressTable2Server24                              = ByteString                                                                                          
 type PointType80PortNumTable2Server24                                = Word16                                                                                           
-type PointType80IPAddressTable2Server25                              = BS.ByteString                                                                                          
+type PointType80IPAddressTable2Server25                              = ByteString                                                                                          
 type PointType80PortNumTable2Server25                                = Word16                                                                                              
   
 pointType80Parser :: Get PointType80

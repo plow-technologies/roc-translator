@@ -1,14 +1,21 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude  #-}
 
 module Protocol.ROC.PointTypes.PointType16 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
+import Data.ByteString    (ByteString)
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           getWord32le,
+                           Get)
+import Data.Word          (Word8,Word16,Word32)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType16 = PointType16 {
  pointType16PointTag                :: !PointType16PointTag                                                   
@@ -40,9 +47,9 @@ data PointType16 = PointType16 {
 ,pointType16InstrctnPntr            :: !PointType16InstrctnPntr                                                   
 ,pointType16ExecDelay               :: !PointType16ExecDelay                                                   
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType16PointTag            = BS.ByteString                                      
+type PointType16PointTag            = ByteString                                      
 type PointType16ResultRegister      = Float                                      
 type PointType16Register1           = Float                                      
 type PointType16Register2           = Float                                      
@@ -58,9 +65,9 @@ type PointType16Timer1              = Word32
 type PointType16Timer2              = Word32                                      
 type PointType16Timer3              = Word32                                     
 type PointType16Timer4              = Word32                                      
-type PointType16Message1            = BS.ByteString                                      
-type PointType16Message2            = BS.ByteString                                      
-type PointType16MessageData         = BS.ByteString                                      
+type PointType16Message1            = ByteString                                      
+type PointType16Message2            = ByteString                                      
+type PointType16MessageData         = ByteString                                      
 type PointType16Misc1               = Word8                                      
 type PointType16Misc2               = Word8                                      
 type PointType16Misc3               = Word8                                      

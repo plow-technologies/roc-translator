@@ -1,11 +1,15 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType10 where
 
-import GHC.Generics
-import Data.Binary
-import Protocol.ROC.Float
+import Data.Binary.Get    (Get)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType10 = PointType10 {
  pointType10OrMeterDPValueTbUncrtdFlow          :: !PointType10OrMeterDPValueTbUncrtdFlow             
@@ -31,7 +35,7 @@ data PointType10 = PointType10 {
 ,pointType10OrFaEv                              :: !PointType10OrFaEv                              
 --,pointType10FlowingMin                          :: !PointType10FlowingMin                          
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType10OrMeterDPValueTbUncrtdFlow       = Float                               
 type PointType10PfStFlowingPressValue            = Float                               

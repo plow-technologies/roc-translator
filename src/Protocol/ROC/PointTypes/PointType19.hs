@@ -1,14 +1,19 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType19 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
+import Data.ByteString    (ByteString)
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           Get)
+import Data.Word          (Word8)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType19 = PointType19 {
  pointType19PointTag                 :: !PointType19PointTag                           
@@ -20,7 +25,7 @@ data PointType19 = PointType19 {
 ,pointType19LastHoursTotal           :: !PointType19LastHoursTotal                           
 ,pointType19UserSpecText             :: !PointType19UserSpecText                           
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType19PointTag             = Float                           
 type PointType19Archive              = Word8                  
@@ -29,7 +34,7 @@ type PointType19PointLogicalNum      = Word8
 type PointType19ParamNum             = Word8                  
 type PointType19LastDailyValue       = Float                   
 type PointType19LastHoursTotal       = Float                
-type PointType19UserSpecText         = BS.ByteString                
+type PointType19UserSpecText         = ByteString                
   
 pointType19Parser :: Get PointType19
 pointType19Parser = do 

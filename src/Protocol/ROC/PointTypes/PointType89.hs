@@ -1,34 +1,38 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType89 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,getWord8,Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (anyButNull,getTLP)
 
 data PointType89 = PointType89 {
  
- pointType89ChartType                   :: !PointType89ChartType                       
-,pointType89HistPntNumber               :: !PointType89HistPntNumber                       
-,pointType89DynamicPointDataTLPRef      :: !PointType89DynamicPointDataTLPRef                       
-,pointType89TextString                  :: !PointType89TextString                       
-,pointType89UnitsString                 :: !PointType89UnitsString                       
-,pointType89ScalingOption               :: !PointType89ScalingOption                       
-,pointType89UserUpperScaleRange         :: !PointType89UserUpperScaleRange                       
-,pointType89UserLowerScaleRange         :: !PointType89UserLowerScaleRange                       
+ pointType89ChartType                   :: !PointType89ChartType
+,pointType89HistPntNumber               :: !PointType89HistPntNumber
+,pointType89DynamicPointDataTLPRef      :: !PointType89DynamicPointDataTLPRef
+,pointType89TextString                  :: !PointType89TextString
+,pointType89UnitsString                 :: !PointType89UnitsString
+,pointType89ScalingOption               :: !PointType89ScalingOption
+,pointType89UserUpperScaleRange         :: !PointType89UserUpperScaleRange
+,pointType89UserLowerScaleRange         :: !PointType89UserLowerScaleRange
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType89ChartType               = Word8                        
 type PointType89HistPntNumber           = Word8                        
 type PointType89DynamicPointDataTLPRef  = [Word8]                        
-type PointType89TextString              = BS.ByteString                        
-type PointType89UnitsString             = BS.ByteString                        
+type PointType89TextString              = ByteString                        
+type PointType89UnitsString             = ByteString                        
 type PointType89ScalingOption           = Bool                                                        
 type PointType89UserUpperScaleRange     = Float                        
 type PointType89UserLowerScaleRange     = Float                        

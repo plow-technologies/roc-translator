@@ -1,101 +1,106 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType41 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.ByteString    (ByteString)
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           Get)
+import Data.Word          (Word8)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (getTLP)
 
 data PointType41 = PointType41 {
   
- pointType41PointTag                      :: !PointType41PointTag                     
-,pointType41ATMPress                      :: !PointType41ATMPress                                
-,pointType41CalcMethodII                  :: !PointType41CalcMethodII                             
-,pointType41NotUse1                       :: !PointType41NotUse1                                 
-,pointType41PipeRefTemp                   :: !PointType41PipeRefTemp                                    
-,pointType41PipeMaterial                  :: !PointType41PipeMaterial                                           
-,pointType41NotUse2                       :: !PointType41NotUse2                                  
-,pointType41MtrTypeOrCdTbFtm              :: !PointType41MtrTypeOrCdTbFtm                                    
-,pointType41FrOrReynoldsNum               :: !PointType41FrOrReynoldsNum                                 
-,pointType41OrExpFactorTbFpm              :: !PointType41OrExpFactorTbFpm                                              
-,pointType41FpbFactor                     :: !PointType41FpbFactor                                             
-,pointType41FtpFactor                     :: !PointType41FtpFactor                               
-,pointType41FtfFactor                     :: !PointType41FtfFactor                                        
-,pointType41FgrFactor                     :: !PointType41FgrFactor                                      
-,pointType41FpvFactor                     :: !PointType41FpvFactor                                      
-,pointType41HistPnt1                      :: !PointType41HistPnt1                                   
-,pointType41RollUp1                       :: !PointType41RollUp1                                    
-,pointType41TLPParamArchived1             :: !PointType41TLPParamArchived1                                       
-,pointType41ConvRollUp1                   :: !PointType41ConvRollUp1                                     
-,pointType41HistPnt2                      :: !PointType41HistPnt2                                    
-,pointType41RollUp2                       :: !PointType41RollUp2                                        
-,pointType41TLPParamArchived2             :: !PointType41TLPParamArchived2                                 
-,pointType41ConvRollUp2                   :: !PointType41ConvRollUp2                                     
-,pointType41HistPnt3                      :: !PointType41HistPnt3                                  
-,pointType41RollUp3                       :: !PointType41RollUp3                                 
-,pointType41TLPParamArchived3             :: !PointType41TLPParamArchived3                                 
-,pointType41ConvRollUp3                   :: !PointType41ConvRollUp3                                 
-,pointType41HistPnt4                      :: !PointType41HistPnt4                                  
-,pointType41RollUp4                       :: !PointType41RollUp4                               
-,pointType41TLPParamArchived4             :: !PointType41TLPParamArchived4                            
-,pointType41ConvRollUp4                   :: !PointType41ConvRollUp4                                
-,pointType41HistPnt5                      :: !PointType41HistPnt5                                                        
-,pointType41RollUp5                       :: !PointType41RollUp5                                                     
-,pointType41TLPParamArchived5             :: !PointType41TLPParamArchived5                                                  
-,pointType41ConvRollUp5                   :: !PointType41ConvRollUp5                                                    
-,pointType41HistPnt6                      :: !PointType41HistPnt6                                                           
-,pointType41RollUp6                       :: !PointType41RollUp6                                                       
-,pointType41TLPParamArchived6             :: !PointType41TLPParamArchived6                                                     
-,pointType41ConvRollUp6                   :: !PointType41ConvRollUp6                                                        
-,pointType41HistPnt7                      :: !PointType41HistPnt7                                                                 
-,pointType41RollUp7                       :: !PointType41RollUp7                                                   
-,pointType41TLPParamArchived7             :: !PointType41TLPParamArchived7                                                     
-,pointType41ConvRollUp7                   :: !PointType41ConvRollUp7                                                        
-,pointType41HistPnt8                      :: !PointType41HistPnt8                              
-,pointType41RollUp8                       :: !PointType41RollUp8                             
-,pointType41TLPParamArchived8             :: !PointType41TLPParamArchived8                                    
-,pointType41ConvRollUp8                   :: !PointType41ConvRollUp8                         
-,pointType41HistPnt9                      :: !PointType41HistPnt9                              
-,pointType41RollUp9                       :: !PointType41RollUp9                             
-,pointType41TLPParamArchived9             :: !PointType41TLPParamArchived9                              
-,pointType41ConvRollUp9                   :: !PointType41ConvRollUp9                             
-,pointType41HistPnt10                     :: !PointType41HistPnt10                               
-,pointType41RollUp10                      :: !PointType41RollUp10                         
-,pointType41TLPParamArchived10            :: !PointType41TLPParamArchived10                           
-,pointType41ConvRollUp10                  :: !PointType41ConvRollUp10                         
---,pointType41HistPnt11                     :: !PointType41HistPnt11                         
---,pointType41RollUp11                      :: !PointType41RollUp11                         
---,pointType41TLPParamArchived11            :: !PointType41TLPParamArchived11                         
---,pointType41ConvRollUp11                  :: !PointType41ConvRollUp11                         
---,pointType41HistPnt12                     :: !PointType41HistPnt12                         
---,pointType41RollUp12                      :: !PointType41RollUp12                         
---,pointType41TLPParamArchived12            :: !PointType41TLPParamArchived12                         
---,pointType41ConvRollUp12                  :: !PointType41ConvRollUp12                         
---,pointType41HistPnt13                     :: !PointType41HistPnt13                         
---,pointType41RollUp13                      :: !PointType41RollUp13                         
---,pointType41TLPParamArchived13            :: !PointType41TLPParamArchived13                         
---,pointType41ConvRollUp13                  :: !PointType41ConvRollUp13                         
---,pointType41HistPnt14                     :: !PointType41HistPnt14                         
---,pointType41RollUp14                      :: !PointType41RollUp14                         
---,pointType41TLPParamArchived14            :: !PointType41TLPParamArchived14                         
---,pointType41ConvRollUp14                  :: !PointType41ConvRollUp14                         
---,pointType41HistPnt15                     :: !PointType41HistPnt15                         
---,pointType41RollUp15                      :: !PointType41RollUp15                         
---,pointType41TLPParamArchived15            :: !PointType41TLPParamArchived15                         
---,pointType41ConvRollUp15                  :: !PointType41ConvRollUp15                         
---,pointType41HistPnt16                     :: !PointType41HistPnt16                                            
---,pointType41RollUp16                      :: !PointType41RollUp16                                             
---,pointType41TLPParamArchived16            :: !PointType41TLPParamArchived16                                   
---,pointType41ConvRollUp16                  :: !PointType41ConvRollUp16                                         
+ pointType41PointTag                      :: !PointType41PointTag
+,pointType41ATMPress                      :: !PointType41ATMPress
+,pointType41CalcMethodII                  :: !PointType41CalcMethodII
+,pointType41NotUse1                       :: !PointType41NotUse1
+,pointType41PipeRefTemp                   :: !PointType41PipeRefTemp
+,pointType41PipeMaterial                  :: !PointType41PipeMaterial
+,pointType41NotUse2                       :: !PointType41NotUse2
+,pointType41MtrTypeOrCdTbFtm              :: !PointType41MtrTypeOrCdTbFtm
+,pointType41FrOrReynoldsNum               :: !PointType41FrOrReynoldsNum
+,pointType41OrExpFactorTbFpm              :: !PointType41OrExpFactorTbFpm
+,pointType41FpbFactor                     :: !PointType41FpbFactor
+,pointType41FtpFactor                     :: !PointType41FtpFactor
+,pointType41FtfFactor                     :: !PointType41FtfFactor
+,pointType41FgrFactor                     :: !PointType41FgrFactor
+,pointType41FpvFactor                     :: !PointType41FpvFactor
+,pointType41HistPnt1                      :: !PointType41HistPnt1
+,pointType41RollUp1                       :: !PointType41RollUp1
+,pointType41TLPParamArchived1             :: !PointType41TLPParamArchived1
+,pointType41ConvRollUp1                   :: !PointType41ConvRollUp1
+,pointType41HistPnt2                      :: !PointType41HistPnt2
+,pointType41RollUp2                       :: !PointType41RollUp2
+,pointType41TLPParamArchived2             :: !PointType41TLPParamArchived2
+,pointType41ConvRollUp2                   :: !PointType41ConvRollUp2
+,pointType41HistPnt3                      :: !PointType41HistPnt3
+,pointType41RollUp3                       :: !PointType41RollUp3
+,pointType41TLPParamArchived3             :: !PointType41TLPParamArchived3
+,pointType41ConvRollUp3                   :: !PointType41ConvRollUp3
+,pointType41HistPnt4                      :: !PointType41HistPnt4
+,pointType41RollUp4                       :: !PointType41RollUp4
+,pointType41TLPParamArchived4             :: !PointType41TLPParamArchived4
+,pointType41ConvRollUp4                   :: !PointType41ConvRollUp4
+,pointType41HistPnt5                      :: !PointType41HistPnt5
+,pointType41RollUp5                       :: !PointType41RollUp5
+,pointType41TLPParamArchived5             :: !PointType41TLPParamArchived5
+,pointType41ConvRollUp5                   :: !PointType41ConvRollUp5
+,pointType41HistPnt6                      :: !PointType41HistPnt6
+,pointType41RollUp6                       :: !PointType41RollUp6
+,pointType41TLPParamArchived6             :: !PointType41TLPParamArchived6
+,pointType41ConvRollUp6                   :: !PointType41ConvRollUp6
+,pointType41HistPnt7                      :: !PointType41HistPnt7
+,pointType41RollUp7                       :: !PointType41RollUp7
+,pointType41TLPParamArchived7             :: !PointType41TLPParamArchived7
+,pointType41ConvRollUp7                   :: !PointType41ConvRollUp7
+,pointType41HistPnt8                      :: !PointType41HistPnt8
+,pointType41RollUp8                       :: !PointType41RollUp8
+,pointType41TLPParamArchived8             :: !PointType41TLPParamArchived8
+,pointType41ConvRollUp8                   :: !PointType41ConvRollUp8
+,pointType41HistPnt9                      :: !PointType41HistPnt9
+,pointType41RollUp9                       :: !PointType41RollUp9
+,pointType41TLPParamArchived9             :: !PointType41TLPParamArchived9
+,pointType41ConvRollUp9                   :: !PointType41ConvRollUp9
+,pointType41HistPnt10                     :: !PointType41HistPnt10
+,pointType41RollUp10                      :: !PointType41RollUp10
+,pointType41TLPParamArchived10            :: !PointType41TLPParamArchived10
+,pointType41ConvRollUp10                  :: !PointType41ConvRollUp10
+--,pointType41HistPnt11                     :: !PointType41HistPnt11
+--,pointType41RollUp11                      :: !PointType41RollUp11
+--,pointType41TLPParamArchived11            :: !PointType41TLPParamArchived11
+--,pointType41ConvRollUp11                  :: !PointType41ConvRollUp11
+--,pointType41HistPnt12                     :: !PointType41HistPnt12
+--,pointType41RollUp12                      :: !PointType41RollUp12
+--,pointType41TLPParamArchived12            :: !PointType41TLPParamArchived12
+--,pointType41ConvRollUp12                  :: !PointType41ConvRollUp12
+--,pointType41HistPnt13                     :: !PointType41HistPnt13
+--,pointType41RollUp13                      :: !PointType41RollUp13
+--,pointType41TLPParamArchived13            :: !PointType41TLPParamArchived13
+--,pointType41ConvRollUp13                  :: !PointType41ConvRollUp13
+--,pointType41HistPnt14                     :: !PointType41HistPnt14
+--,pointType41RollUp14                      :: !PointType41RollUp14
+--,pointType41TLPParamArchived14            :: !PointType41TLPParamArchived14
+--,pointType41ConvRollUp14                  :: !PointType41ConvRollUp14
+--,pointType41HistPnt15                     :: !PointType41HistPnt15
+--,pointType41RollUp15                      :: !PointType41RollUp15
+--,pointType41TLPParamArchived15            :: !PointType41TLPParamArchived15
+--,pointType41ConvRollUp15                  :: !PointType41ConvRollUp15
+--,pointType41HistPnt16                     :: !PointType41HistPnt16
+--,pointType41RollUp16                      :: !PointType41RollUp16
+--,pointType41TLPParamArchived16            :: !PointType41TLPParamArchived16
+--,pointType41ConvRollUp16                  :: !PointType41ConvRollUp16
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType41PointTag                 = BS.ByteString                                       
+type PointType41PointTag                 = ByteString                                       
 type PointType41ATMPress                 = Float                              
 type PointType41CalcMethodII             = Word8                              
 type PointType41NotUse1                  = [Word8]                              

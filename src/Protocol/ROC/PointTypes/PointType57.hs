@@ -1,13 +1,18 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType57 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
+import Data.Binary.Get (getByteString,
+                        getWord8,
+                        getWord16le,
+                        Get)
+import Data.ByteString (ByteString)
+import Data.Word       (Word8,Word16)
+import Prelude         (($),
+                        return,
+                        Eq,
+                        Read,
+                        Show)
 
 data PointType57 = PointType57 {
  
@@ -18,9 +23,9 @@ data PointType57 = PointType57 {
 ,pointType57Password               :: !PointType57Password                                                                
 ,pointType57UserTimeout            :: !PointType57UserTimeout                                                                   
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)          
 
-type PointType57OperatorId          = BS.ByteString                                                                                    
+type PointType57OperatorId          = ByteString                                                                                    
 type PointType57ListSecurity        = Word8                                                                         
 type PointType57KeypadSecurity      = Word8                                                                  
 type PointType57LCDCFGUserList      = Word8                                                                    

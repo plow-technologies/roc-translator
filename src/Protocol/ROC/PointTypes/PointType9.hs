@@ -1,14 +1,16 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType9 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (getTLP)
 
 data PointType9 = PointType9 {
  pointType9Line1Text       :: !PointType9Line1Text                                            
@@ -18,11 +20,11 @@ data PointType9 = PointType9 {
 ,pointType9Line2TLP        :: !PointType9Line2TLP                                       
 ,pointType9Line3TLP        :: !PointType9Line3TLP                                      
                       
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read, Eq, Show)                       
 
-type PointType9Line1Text   = BS.ByteString    
-type PointType9Line2Text   = BS.ByteString            
-type PointType9Line3Text   = BS.ByteString           
+type PointType9Line1Text   = ByteString    
+type PointType9Line2Text   = ByteString            
+type PointType9Line3Text   = ByteString           
 type PointType9Line1TLP    = [Word8]               
 type PointType9Line2TLP    = [Word8]             
 type PointType9Line3TLP    = [Word8]            

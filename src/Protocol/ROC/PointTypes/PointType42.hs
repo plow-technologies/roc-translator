@@ -1,13 +1,17 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType42 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
+import Data.Binary.Get    (getByteString,
+                           Get)
+import Data.ByteString    (ByteString)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType42 = PointType42 {
  pointType42PointTag                           :: !PointType42PointTag                                           
@@ -40,9 +44,9 @@ data PointType42 = PointType42 {
 ,pointType42UpStrAbsoluteStaticPress           :: !PointType42UpStrAbsoluteStaticPress                          
 ,pointType42MolecularWeight                    :: !PointType42MolecularWeight                                 
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType42PointTag                        = BS.ByteString                                           
+type PointType42PointTag                        = ByteString                                           
 type PointType42FlowToday                       = Float                                          
 type PointType42FlowYesterday                   = Float                                         
 type PointType42FlowMonth                       = Float                                         

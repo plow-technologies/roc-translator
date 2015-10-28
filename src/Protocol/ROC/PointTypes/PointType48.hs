@@ -1,61 +1,64 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType48 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,getWord8,Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (getTLP)
 
 data PointType48 = PointType48 {
  
- pointType48PointTag                            :: !PointType48PointTag                       
-,pointType48ControlType                         :: !PointType48ControlType                               
-,pointType48ActiveLoopStatus                    :: !PointType48ActiveLoopStatus                            
-,pointType48LoopPeriod                          :: !PointType48LoopPeriod                         
-,pointType48ActualLoopPeriod                    :: !PointType48ActualLoopPeriod                             
-,pointType48PrimPVInputPnt                      :: !PointType48PrimPVInputPnt                              
-,pointType48PrimStpnt                           :: !PointType48PrimStpnt                               
-,pointType48PrimStpntChangeMax                  :: !PointType48PrimStpntChangeMax                                
-,pointType48PrimPorpGain                        :: !PointType48PrimPorpGain                                   
-,pointType48PrimResetIntGain                    :: !PointType48PrimResetIntGain                              
-,pointType48PrimRateDerivGain                   :: !PointType48PrimRateDerivGain                                  
-,pointType48PrimScaleFactor                     :: !PointType48PrimScaleFactor                      
-,pointType48PrimIntDeadband                     :: !PointType48PrimIntDeadband                               
-,pointType48PrimProcessVar                      :: !PointType48PrimProcessVar                               
-,pointType48PrimChangeOutput                    :: !PointType48PrimChangeOutput                            
-,pointType48OvrdPVInputPnt                      :: !PointType48OvrdPVInputPnt                            
-,pointType48OvrdStpnt                           :: !PointType48OvrdStpnt                            
-,pointType48OvrdStpntChangeMax                  :: !PointType48OvrdStpntChangeMax                              
-,pointType48OvrdPropGain                        :: !PointType48OvrdPropGain                              
-,pointType48OvrdResetIntGain                    :: !PointType48OvrdResetIntGain                              
-,pointType48OvrdRateDerivGain                   :: !PointType48OvrdRateDerivGain                              
-,pointType48OvrdScaleFactor                     :: !PointType48OvrdScaleFactor                              
-,pointType48OvrdIntDeadband                     :: !PointType48OvrdIntDeadband                              
-,pointType48OvrdProcessVar                      :: !PointType48OvrdProcessVar                              
-,pointType48OvrdChangeOutput                    :: !PointType48OvrdChangeOutput                              
-,pointType48PIDCurrentOutput                    :: !PointType48PIDCurrentOutput                              
-,pointType48PIDOutputPnt                        :: !PointType48PIDOutputPnt                               
-,pointType48PID2ndOutput                        :: !PointType48PID2ndOutput                               
-,pointType48OutputLowLimitValue                 :: !PointType48OutputLowLimitValue                             
-,pointType48OutputHighLimitValue                :: !PointType48OutputHighLimitValue                             
-,pointType48ControlLoopSelecion                 :: !PointType48ControlLoopSelecion                                   
-,pointType48OvrdLoopThreshSwitch                :: !PointType48OvrdLoopThreshSwitch                              
-,pointType48PrimLoopPVStpntUnits                :: !PointType48PrimLoopPVStpntUnits                              
-,pointType48OvrdPVLoopStpntUnits                :: !PointType48OvrdPVLoopStpntUnits                              
-,pointType48PIDOutputUnits                      :: !PointType48PIDOutputUnits                               
-,pointType48PrimLoopProcessVarLowEu             :: !PointType48PrimLoopProcessVarLowEu                               
-,pointType48PrimLoopProcessVarHighEu            :: !PointType48PrimLoopProcessVarHighEu                             
-,pointType48OvrdLoopProcessVarLowEu             :: !PointType48OvrdLoopProcessVarLowEu                             
-,pointType48OvrdLoopProcessVarHighEu            :: !PointType48OvrdLoopProcessVarHighEu                                   
+ pointType48PointTag                            :: !PointType48PointTag
+,pointType48ControlType                         :: !PointType48ControlType
+,pointType48ActiveLoopStatus                    :: !PointType48ActiveLoopStatus
+,pointType48LoopPeriod                          :: !PointType48LoopPeriod
+,pointType48ActualLoopPeriod                    :: !PointType48ActualLoopPeriod
+,pointType48PrimPVInputPnt                      :: !PointType48PrimPVInputPnt
+,pointType48PrimStpnt                           :: !PointType48PrimStpnt
+,pointType48PrimStpntChangeMax                  :: !PointType48PrimStpntChangeMax
+,pointType48PrimPorpGain                        :: !PointType48PrimPorpGain
+,pointType48PrimResetIntGain                    :: !PointType48PrimResetIntGain
+,pointType48PrimRateDerivGain                   :: !PointType48PrimRateDerivGain
+,pointType48PrimScaleFactor                     :: !PointType48PrimScaleFactor
+,pointType48PrimIntDeadband                     :: !PointType48PrimIntDeadband
+,pointType48PrimProcessVar                      :: !PointType48PrimProcessVar
+,pointType48PrimChangeOutput                    :: !PointType48PrimChangeOutput
+,pointType48OvrdPVInputPnt                      :: !PointType48OvrdPVInputPnt
+,pointType48OvrdStpnt                           :: !PointType48OvrdStpnt
+,pointType48OvrdStpntChangeMax                  :: !PointType48OvrdStpntChangeMax
+,pointType48OvrdPropGain                        :: !PointType48OvrdPropGain
+,pointType48OvrdResetIntGain                    :: !PointType48OvrdResetIntGain
+,pointType48OvrdRateDerivGain                   :: !PointType48OvrdRateDerivGain
+,pointType48OvrdScaleFactor                     :: !PointType48OvrdScaleFactor
+,pointType48OvrdIntDeadband                     :: !PointType48OvrdIntDeadband
+,pointType48OvrdProcessVar                      :: !PointType48OvrdProcessVar
+,pointType48OvrdChangeOutput                    :: !PointType48OvrdChangeOutput
+,pointType48PIDCurrentOutput                    :: !PointType48PIDCurrentOutput
+,pointType48PIDOutputPnt                        :: !PointType48PIDOutputPnt
+,pointType48PID2ndOutput                        :: !PointType48PID2ndOutput
+,pointType48OutputLowLimitValue                 :: !PointType48OutputLowLimitValue
+,pointType48OutputHighLimitValue                :: !PointType48OutputHighLimitValue
+,pointType48ControlLoopSelecion                 :: !PointType48ControlLoopSelecion
+,pointType48OvrdLoopThreshSwitch                :: !PointType48OvrdLoopThreshSwitch
+,pointType48PrimLoopPVStpntUnits                :: !PointType48PrimLoopPVStpntUnits
+,pointType48OvrdPVLoopStpntUnits                :: !PointType48OvrdPVLoopStpntUnits
+,pointType48PIDOutputUnits                      :: !PointType48PIDOutputUnits
+,pointType48PrimLoopProcessVarLowEu             :: !PointType48PrimLoopProcessVarLowEu
+,pointType48PrimLoopProcessVarHighEu            :: !PointType48PrimLoopProcessVarHighEu
+,pointType48OvrdLoopProcessVarLowEu             :: !PointType48OvrdLoopProcessVarLowEu
+,pointType48OvrdLoopProcessVarHighEu            :: !PointType48OvrdLoopProcessVarHighEu
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType48PointTag                         = BS.ByteString                              
+type PointType48PointTag                         = ByteString                              
 type PointType48ControlType                      = Word8                                                                      
 type PointType48ActiveLoopStatus                 = Word8                                                                             
 type PointType48LoopPeriod                       = Float                                                                              
@@ -87,9 +90,9 @@ type PointType48OutputLowLimitValue              = Float
 type PointType48OutputHighLimitValue             = Float                                                                              
 type PointType48ControlLoopSelecion              = Word8                                                                              
 type PointType48OvrdLoopThreshSwitch             = Float                                                                       
-type PointType48PrimLoopPVStpntUnits             = BS.ByteString                                                                       
-type PointType48OvrdPVLoopStpntUnits             = BS.ByteString                                                                              
-type PointType48PIDOutputUnits                   = BS.ByteString                                                                              
+type PointType48PrimLoopPVStpntUnits             = ByteString                                                                       
+type PointType48OvrdPVLoopStpntUnits             = ByteString                                                                              
+type PointType48PIDOutputUnits                   = ByteString                                                                              
 type PointType48PrimLoopProcessVarLowEu          = Float                                                                              
 type PointType48PrimLoopProcessVarHighEu         = Float                                                                              
 type PointType48OvrdLoopProcessVarLowEu          = Float                                                                              

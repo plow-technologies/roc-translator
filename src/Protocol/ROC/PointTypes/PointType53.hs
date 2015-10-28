@@ -1,39 +1,44 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude  #-}
 
 module Protocol.ROC.PointTypes.PointType53 where
 
-import GHC.Generics
-import Data.Int
-import Data.Word
-import Data.Binary
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getWord8,Get)
+import Data.Int           (Int16)
+import Data.Word          (Word8)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (anyButNull,getInt16)
 
 data PointType53 = PointType53 {
  
- pointType53Options                    :: !PointType53Options                                     
-,pointType53ModbusStatus               :: !PointType53ModbusStatus                                          
-,pointType53HighIntegerScale           :: !PointType53HighIntegerScale                                        
-,pointType53LowIntegerScale            :: !PointType53LowIntegerScale                                       
-,pointType53HighFloatScale1            :: !PointType53HighFloatScale1                                             
-,pointType53LowFloatScale1             :: !PointType53LowFloatScale1                                                
-,pointType53HighFloatScale2            :: !PointType53HighFloatScale2                                            
-,pointType53LowFloatScale2             :: !PointType53LowFloatScale2                                     
-,pointType53HighFloatScale3            :: !PointType53HighFloatScale3                                         
-,pointType53LowFloatScale3             :: !PointType53LowFloatScale3                                     
-,pointType53HighFloatScale4            :: !PointType53HighFloatScale4                                           
-,pointType53LowFloatScale4             :: !PointType53LowFloatScale4                                
-,pointType53HighFloatScale5            :: !PointType53HighFloatScale5                                     
-,pointType53LowFloatScale5             :: !PointType53LowFloatScale5                                            
-,pointType53HighFloatScale6            :: !PointType53HighFloatScale6                                     
-,pointType53LowFloatScale6             :: !PointType53LowFloatScale6                                         
-,pointType53HighFloatScale7            :: !PointType53HighFloatScale7                                     
-,pointType53LowFloatScale7             :: !PointType53LowFloatScale7                                           
-,pointType53HighFloatScale8            :: !PointType53HighFloatScale8                                
-,pointType53LowFloatScale8             :: !PointType53LowFloatScale8                                     
+ pointType53Options                    :: !PointType53Options
+,pointType53ModbusStatus               :: !PointType53ModbusStatus
+,pointType53HighIntegerScale           :: !PointType53HighIntegerScale
+,pointType53LowIntegerScale            :: !PointType53LowIntegerScale
+,pointType53HighFloatScale1            :: !PointType53HighFloatScale1
+,pointType53LowFloatScale1             :: !PointType53LowFloatScale1
+,pointType53HighFloatScale2            :: !PointType53HighFloatScale2
+,pointType53LowFloatScale2             :: !PointType53LowFloatScale2
+,pointType53HighFloatScale3            :: !PointType53HighFloatScale3
+,pointType53LowFloatScale3             :: !PointType53LowFloatScale3
+,pointType53HighFloatScale4            :: !PointType53HighFloatScale4
+,pointType53LowFloatScale4             :: !PointType53LowFloatScale4
+,pointType53HighFloatScale5            :: !PointType53HighFloatScale5
+,pointType53LowFloatScale5             :: !PointType53LowFloatScale5
+,pointType53HighFloatScale6            :: !PointType53HighFloatScale6
+,pointType53LowFloatScale6             :: !PointType53LowFloatScale6
+,pointType53HighFloatScale7            :: !PointType53HighFloatScale7
+,pointType53LowFloatScale7             :: !PointType53LowFloatScale7
+,pointType53HighFloatScale8            :: !PointType53HighFloatScale8
+,pointType53LowFloatScale8             :: !PointType53LowFloatScale8
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType53Options                = Word8                                                            
 type PointType53ModbusStatus           = Bool                                                          

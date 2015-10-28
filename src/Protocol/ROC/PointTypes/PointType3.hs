@@ -1,16 +1,22 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType3 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Int
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (Get,
+                           getByteString,
+                           getWord8,
+                           getWord16le)
+import Data.ByteString    (ByteString)
+import Data.Int           (Int16)
+import Data.Word          (Word8,Word16)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (getInt16)
 
 data PointType3 = PointType3 {
  pointType3PointTag                      :: !PointType3PointTag                       
@@ -49,10 +55,10 @@ data PointType3 = PointType3 {
 ,pointType3Timer                         :: !PointType3Timer                     
 ,pointType3CalibrationMode               :: !PointType3CalibrationMode                         
 ,pointType3CablibrationType              :: !PointType3CablibrationType                       
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType3PointTag                         = BS.ByteString
-type PointType3Units                            = BS.ByteString    
+type PointType3PointTag                         = ByteString
+type PointType3Units                            = ByteString    
 type PointType3ScanPeriod                       = Word16           
 type PointType3Filter                           = Word16               
 type PointType3AdjustedDA0                      = Int16             

@@ -1,34 +1,37 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType52 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
+import Data.Binary.Get    (getByteString,getWord8,Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType52 = PointType52 {
  
- pointType52PointTag                         :: !PointType52PointTag                                 
-,pointType52BatteryVoltage                   :: !PointType52BatteryVoltage                                
-,pointType52VoltageInput                     :: !PointType52VoltageInput                                
-,pointType52BatteryTemp                      :: !PointType52BatteryTemp                                
-,pointType52LowBatteryDropout                :: !PointType52LowBatteryDropout                                
-,pointType52BatteryTurnOnVoltage             :: !PointType52BatteryTurnOnVoltage                                
-,pointType52ReferenceVoltage                 :: !PointType52ReferenceVoltage                                
-,pointType52UnitsFlag                        :: !PointType52UnitsFlag                                
-,pointType52BatteryStatus                    :: !PointType52BatteryStatus                                
-,pointType52DutyCycle                        :: !PointType52DutyCycle                                
-,pointType52BatteryActivity                  :: !PointType52BatteryActivity                                
-,pointType52Task                             :: !PointType52Task                                
-,pointType52SleepFlag                        :: !PointType52SleepFlag                                
+ pointType52PointTag                         :: !PointType52PointTag
+,pointType52BatteryVoltage                   :: !PointType52BatteryVoltage
+,pointType52VoltageInput                     :: !PointType52VoltageInput
+,pointType52BatteryTemp                      :: !PointType52BatteryTemp
+,pointType52LowBatteryDropout                :: !PointType52LowBatteryDropout
+,pointType52BatteryTurnOnVoltage             :: !PointType52BatteryTurnOnVoltage
+,pointType52ReferenceVoltage                 :: !PointType52ReferenceVoltage
+,pointType52UnitsFlag                        :: !PointType52UnitsFlag
+,pointType52BatteryStatus                    :: !PointType52BatteryStatus
+,pointType52DutyCycle                        :: !PointType52DutyCycle
+,pointType52BatteryActivity                  :: !PointType52BatteryActivity
+,pointType52Task                             :: !PointType52Task
+,pointType52SleepFlag                        :: !PointType52SleepFlag
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show) 
 
-type PointType52PointTag                      = BS.ByteString                                      
+type PointType52PointTag                      = ByteString                                      
 type PointType52BatteryVoltage                = Float                                            
 type PointType52VoltageInput                  = Float                                    
 type PointType52BatteryTemp                   = Float                                      

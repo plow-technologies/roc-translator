@@ -1,34 +1,37 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType45 where
 
-import GHC.Generics
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getWord8,getWord16le,Get)
+import Data.Word          (Word8,Word16)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (getTLP)
 
 data PointType45 = PointType45 {
   
- pointType45CalibOption                     :: !PointType45CalibOption                               
-,pointType45AmbTempMercury                  :: !PointType45AmbTempMercury                                          
-,pointType45TempMercuryWhenCalib            :: !PointType45TempMercuryWhenCalib                                             
-,pointType45CalibWeightGravAccel            :: !PointType45CalibWeightGravAccel                                                
-,pointType45WaterTempWhenCalib              :: !PointType45WaterTempWhenCalib                                       
-,pointType45AirTempWhenCalib                :: !PointType45AirTempWhenCalib                                          
-,pointType45UserCorrectionFactor            :: !PointType45UserCorrectionFactor                                               
-,pointType45SamplerEnable                   :: !PointType45SamplerEnable                                      
-,pointType45SamplerAccumTrigger             :: !PointType45SamplerAccumTrigger                                   
-,pointType45SamplerDuration                 :: !PointType45SamplerDuration                                             
-,pointType45SensorModIntegrityAlarmCode     :: !PointType45SensorModIntegrityAlarmCode                                             
-,pointType45SMIntegrityDeadbandTime         :: !PointType45SMIntegrityDeadbandTime                                                   
-,pointType45SMAlarmControl                  :: !PointType45SMAlarmControl                                        
-,pointType45IntegrityLevelTb                :: !PointType45IntegrityLevelTb                                                                                 
-,pointType45TLPForSampler                   :: !PointType45TLPForSampler                                     
+ pointType45CalibOption                     :: !PointType45CalibOption
+,pointType45AmbTempMercury                  :: !PointType45AmbTempMercury
+,pointType45TempMercuryWhenCalib            :: !PointType45TempMercuryWhenCalib
+,pointType45CalibWeightGravAccel            :: !PointType45CalibWeightGravAccel
+,pointType45WaterTempWhenCalib              :: !PointType45WaterTempWhenCalib
+,pointType45AirTempWhenCalib                :: !PointType45AirTempWhenCalib
+,pointType45UserCorrectionFactor            :: !PointType45UserCorrectionFactor
+,pointType45SamplerEnable                   :: !PointType45SamplerEnable
+,pointType45SamplerAccumTrigger             :: !PointType45SamplerAccumTrigger
+,pointType45SamplerDuration                 :: !PointType45SamplerDuration
+,pointType45SensorModIntegrityAlarmCode     :: !PointType45SensorModIntegrityAlarmCode
+,pointType45SMIntegrityDeadbandTime         :: !PointType45SMIntegrityDeadbandTime
+,pointType45SMAlarmControl                  :: !PointType45SMAlarmControl
+,pointType45IntegrityLevelTb                :: !PointType45IntegrityLevelTb
+,pointType45TLPForSampler                   :: !PointType45TLPForSampler
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType45CalibOption                  = Word8                                                             
 type PointType45AmbTempMercury               = Float                                            

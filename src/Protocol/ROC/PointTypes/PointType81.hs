@@ -1,34 +1,37 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType81 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
+import Data.Binary.Get    (getByteString,getWord16le,Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word16)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType81 = PointType81 {
  
- pointType81TagId                             :: !PointType81TagId                                  
-,pointType81TravelOperatorStatus              :: !PointType81TravelOperatorStatus                                                 
-,pointType81InletPressOperatorStatus          :: !PointType81InletPressOperatorStatus                                                           
-,pointType81OutletPressOperatorStatus         :: !PointType81OutletPressOperatorStatus                                                       
-,pointType81AuxPressOperatorStatus            :: !PointType81AuxPressOperatorStatus                                                                  
-,pointType81FlowOperatorStatus                :: !PointType81FlowOperatorStatus                                                           
-,pointType81TravelValue                       :: !PointType81TravelValue                                                        
-,pointType81InletPressValue                   :: !PointType81InletPressValue                                                   
-,pointType81OutletPressValue                  :: !PointType81OutletPressValue                                                                     
-,pointType81AuxPressValue                     :: !PointType81AuxPressValue                                                            
-,pointType81FlowValue                         :: !PointType81FlowValue                                                    
-,pointType81Mode                              :: !PointType81Mode                                    
-,pointType81Description                       :: !PointType81Description                                                                     
+ pointType81TagId                             :: !PointType81TagId
+,pointType81TravelOperatorStatus              :: !PointType81TravelOperatorStatus
+,pointType81InletPressOperatorStatus          :: !PointType81InletPressOperatorStatus
+,pointType81OutletPressOperatorStatus         :: !PointType81OutletPressOperatorStatus
+,pointType81AuxPressOperatorStatus            :: !PointType81AuxPressOperatorStatus
+,pointType81FlowOperatorStatus                :: !PointType81FlowOperatorStatus
+,pointType81TravelValue                       :: !PointType81TravelValue
+,pointType81InletPressValue                   :: !PointType81InletPressValue
+,pointType81OutletPressValue                  :: !PointType81OutletPressValue
+,pointType81AuxPressValue                     :: !PointType81AuxPressValue
+,pointType81FlowValue                         :: !PointType81FlowValue
+,pointType81Mode                              :: !PointType81Mode
+,pointType81Description                       :: !PointType81Description
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type  PointType81TagId                        = BS.ByteString                                                                                           
+type  PointType81TagId                        = ByteString                                                                                           
 type  PointType81TravelOperatorStatus         = Float                                                                               
 type  PointType81InletPressOperatorStatus     = Float                                                                          
 type  PointType81OutletPressOperatorStatus    = Float                                                                            
@@ -40,7 +43,7 @@ type  PointType81OutletPressValue             = Float
 type  PointType81AuxPressValue                = Float                                                                                  
 type  PointType81FlowValue                    = Float                                                                          
 type  PointType81Mode                         = Word16                                                                           
-type  PointType81Description                  = BS.ByteString                                                                             
+type  PointType81Description                  = ByteString                                                                             
                                 
 pointType81Parser :: Get PointType81
 pointType81Parser = do 

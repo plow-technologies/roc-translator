@@ -1,82 +1,88 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType20 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord32le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8,Word32)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType20 = PointType20 {
  
- pointType20ModType                      :: !PointType20ModType                    
-,pointType20PhysicalModType              :: !PointType20PhysicalModType                    
-,pointType20InstalledMod                 :: !PointType20InstalledMod                    
-,pointType20ModAppRev                    :: !PointType20ModAppRev                    
-,pointType20ModAppPartNum                :: !PointType20ModAppPartNum                    
-,pointType20ModAppBuilDate               :: !PointType20ModAppBuilDate                    
-,pointType20ModAppSerialNum              :: !PointType20ModAppSerialNum                    
-,pointType20CompAlarmSummary             :: !PointType20CompAlarmSummary                    
-,pointType20CompIntegrityStatus          :: !PointType20CompIntegrityStatus                    
-,pointType20ModAlarmStatus               :: !PointType20ModAlarmStatus                    
-,pointType20ModIntegrityStatus           :: !PointType20ModIntegrityStatus                    
-,pointType20ModCFG                       :: !PointType20ModCFG                    
-,pointType20ModSpecificCFG1              :: !PointType20ModSpecificCFG1                    
-,pointType20ModSpecificCFG2              :: !PointType20ModSpecificCFG2                    
-,pointType20CFGOrStatus1                 :: !PointType20CFGOrStatus1                    
-,pointType20CFGOrStatus2                 :: !PointType20CFGOrStatus2                    
-,pointType20CFGOrStatus3                 :: !PointType20CFGOrStatus3                    
-,pointType20ModDiagnostic1               :: !PointType20ModDiagnostic1                    
-,pointType20ModDiagnostic2               :: !PointType20ModDiagnostic2                    
-,pointType20ModDiagnostic3               :: !PointType20ModDiagnostic3                    
-,pointType20ModDiagnostic4               :: !PointType20ModDiagnostic4                    
-,pointType20ModDiagnostic5               :: !PointType20ModDiagnostic5                    
-,pointType20ModDiagnostic6               :: !PointType20ModDiagnostic6                    
-,pointType20ModDiagnostic7               :: !PointType20ModDiagnostic7                    
-,pointType20ModDiagnostic8               :: !PointType20ModDiagnostic8                    
-,pointType20ModDiagnostic9               :: !PointType20ModDiagnostic9                    
-,pointType20ModDiagnostic10              :: !PointType20ModDiagnostic10                    
-,pointType20ModDiagnostic11              :: !PointType20ModDiagnostic11                    
-,pointType20BootRevString                :: !PointType20BootRevString                    
-,pointType20BootBuildDate                :: !PointType20BootBuildDate                    
-,pointType20InstldModDescString          :: !PointType20InstldModDescString                    
+ pointType20ModType                      :: !PointType20ModType
+,pointType20PhysicalModType              :: !PointType20PhysicalModType
+,pointType20InstalledMod                 :: !PointType20InstalledMod
+,pointType20ModAppRev                    :: !PointType20ModAppRev
+,pointType20ModAppPartNum                :: !PointType20ModAppPartNum
+,pointType20ModAppBuilDate               :: !PointType20ModAppBuilDate
+,pointType20ModAppSerialNum              :: !PointType20ModAppSerialNum
+,pointType20CompAlarmSummary             :: !PointType20CompAlarmSummary
+,pointType20CompIntegrityStatus          :: !PointType20CompIntegrityStatus
+,pointType20ModAlarmStatus               :: !PointType20ModAlarmStatus
+,pointType20ModIntegrityStatus           :: !PointType20ModIntegrityStatus
+,pointType20ModCFG                       :: !PointType20ModCFG
+,pointType20ModSpecificCFG1              :: !PointType20ModSpecificCFG1
+,pointType20ModSpecificCFG2              :: !PointType20ModSpecificCFG2
+,pointType20CFGOrStatus1                 :: !PointType20CFGOrStatus1
+,pointType20CFGOrStatus2                 :: !PointType20CFGOrStatus2
+,pointType20CFGOrStatus3                 :: !PointType20CFGOrStatus3
+,pointType20ModDiagnostic1               :: !PointType20ModDiagnostic1
+,pointType20ModDiagnostic2               :: !PointType20ModDiagnostic2
+,pointType20ModDiagnostic3               :: !PointType20ModDiagnostic3
+,pointType20ModDiagnostic4               :: !PointType20ModDiagnostic4
+,pointType20ModDiagnostic5               :: !PointType20ModDiagnostic5
+,pointType20ModDiagnostic6               :: !PointType20ModDiagnostic6
+,pointType20ModDiagnostic7               :: !PointType20ModDiagnostic7
+,pointType20ModDiagnostic8               :: !PointType20ModDiagnostic8
+,pointType20ModDiagnostic9               :: !PointType20ModDiagnostic9
+,pointType20ModDiagnostic10              :: !PointType20ModDiagnostic10
+,pointType20ModDiagnostic11              :: !PointType20ModDiagnostic11
+,pointType20BootRevString                :: !PointType20BootRevString
+,pointType20BootBuildDate                :: !PointType20BootBuildDate
+,pointType20InstldModDescString          :: !PointType20InstldModDescString
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType20ModType                  = Word8                   
-type PointType20PhysicalModType          = Word8                                                           
-type PointType20InstalledMod             = BS.ByteString                                                          
-type PointType20ModAppRev                = BS.ByteString                                                           
-type PointType20ModAppPartNum            = BS.ByteString                                                           
-type PointType20ModAppBuilDate           = BS.ByteString                                                           
-type PointType20ModAppSerialNum          = BS.ByteString                                                           
-type PointType20CompAlarmSummary         = Word32                                                           
-type PointType20CompIntegrityStatus      = Word32                                                           
-type PointType20ModAlarmStatus           = Word32                                                           
-type PointType20ModIntegrityStatus       = Word32                                                           
-type PointType20ModCFG                   = Word32                                                           
-type PointType20ModSpecificCFG1          = Word32                                                           
-type PointType20ModSpecificCFG2          = Word32                                                           
-type PointType20CFGOrStatus1             = Word32                                                           
-type PointType20CFGOrStatus2             = Word32                                                           
-type PointType20CFGOrStatus3             = Word32                                                           
-type PointType20ModDiagnostic1           = Float                                                           
-type PointType20ModDiagnostic2           = Float                                                           
-type PointType20ModDiagnostic3           = Float                                                           
-type PointType20ModDiagnostic4           = Word32                                                           
-type PointType20ModDiagnostic5           = Word32                                                           
-type PointType20ModDiagnostic6           = Word32                                                           
-type PointType20ModDiagnostic7           = Word32                                                           
-type PointType20ModDiagnostic8           = Word32                                                           
-type PointType20ModDiagnostic9           = BS.ByteString                                                           
-type PointType20ModDiagnostic10          = BS.ByteString                                                           
-type PointType20ModDiagnostic11          = BS.ByteString                                                           
-type PointType20BootRevString            = BS.ByteString                                                           
-type PointType20BootBuildDate            = BS.ByteString                                                           
-type PointType20InstldModDescString      = BS.ByteString                                                           
+type PointType20ModType                  = Word8
+type PointType20PhysicalModType          = Word8
+type PointType20InstalledMod             = ByteString
+type PointType20ModAppRev                = ByteString
+type PointType20ModAppPartNum            = ByteString
+type PointType20ModAppBuilDate           = ByteString
+type PointType20ModAppSerialNum          = ByteString
+type PointType20CompAlarmSummary         = Word32
+type PointType20CompIntegrityStatus      = Word32
+type PointType20ModAlarmStatus           = Word32
+type PointType20ModIntegrityStatus       = Word32
+type PointType20ModCFG                   = Word32
+type PointType20ModSpecificCFG1          = Word32
+type PointType20ModSpecificCFG2          = Word32
+type PointType20CFGOrStatus1             = Word32
+type PointType20CFGOrStatus2             = Word32
+type PointType20CFGOrStatus3             = Word32
+type PointType20ModDiagnostic1           = Float
+type PointType20ModDiagnostic2           = Float
+type PointType20ModDiagnostic3           = Float
+type PointType20ModDiagnostic4           = Word32
+type PointType20ModDiagnostic5           = Word32
+type PointType20ModDiagnostic6           = Word32
+type PointType20ModDiagnostic7           = Word32
+type PointType20ModDiagnostic8           = Word32
+type PointType20ModDiagnostic9           = ByteString
+type PointType20ModDiagnostic10          = ByteString
+type PointType20ModDiagnostic11          = ByteString
+type PointType20BootRevString            = ByteString
+type PointType20BootBuildDate            = ByteString
+type PointType20InstldModDescString      = ByteString
 
   
 pointType20Parser :: Get PointType20 

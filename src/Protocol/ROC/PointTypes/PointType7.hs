@@ -1,15 +1,22 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType7 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.ByteString    (ByteString)
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           Get)
+import Data.Word          (Word8,Word16)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (anyButNull,getTLP)
 
 data PointType7 = PointType7 {
  pointType7PointTag                   :: !PointType7PointTag                   
@@ -66,9 +73,9 @@ data PointType7 = PointType7 {
 ,pointType7MeterValueDP               :: !PointType7MeterValueDP                             
 ,pointType7StaticFlowingPressValue    :: !PointType7StaticFlowingPressValue            
 ,pointType7FlowingTempValue           :: !PointType7FlowingTempValue                     
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType7PointTag                      = BS.ByteString
+type PointType7PointTag                      = ByteString
 type PointType7Latitude                      = Float
 type PointType7Elevation                     = Float
 type PointType7CalcMethod                    = Word8
@@ -81,7 +88,7 @@ type PointType7PipeDiameter                  = Float
 type PointType7OrificeDiameter               = Float
 type PointType7OrificeTemp                   = Float
 type PointType7OrificeMaterial               = Word8
-type PointType7MeterRunPntDesc               = BS.ByteString
+type PointType7MeterRunPntDesc               = ByteString
 type PointType7AlarmCode                     = Word8
 type PointType7LowAlarmFlow                  = Float
 type PointType7HighAlarmFlow                 = Float

@@ -24,14 +24,15 @@ Library
   Other-Modules:        Protocol.ROC.Internal
 
   Build-Depends:        base >= 4 && < 5
-                       , crc-fast     == 0.1.0 
-                       , serialport   >= 0.4.7 && < 0.4.8
-                       , transformers >= 0.3.0.0 
-                       , bytestring   >= 0.10.4.0 
-                       , lens         >= 3.10
-                       , binary
-                       , crc16-table  == 0.1
-                       , time         >= 1.4.0.1
+                      , binary             
+                      , bytestring         >= 0.10.4.0 
+                      , crc-fast           == 0.1.0 
+                      , crc16-table        == 0.1
+                      , lens               >= 3.10
+                      , roc-protocol-types >= 0.0.0.0
+                      , serialport         >= 0.4.7 && < 0.4.8
+                      , transformers       >= 0.3.0.0 
+                      , time               >= 1.4.0.1
 
 Test-Suite spec
   Type:                 exitcode-stdio-1.0

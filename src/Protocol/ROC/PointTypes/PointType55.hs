@@ -1,126 +1,129 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType55 where
 
-import GHC.Generics
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getWord8,getWord16le,Get)
+import Data.Word          (Word8,Word16)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (anyButNull)
 
 data PointType55 = PointType55 {
   
- pointType55EventAlarmRgstr                :: !PointType55EventAlarmRgstr                                   
-,pointType55PeriodicHistIndexRgstr         :: !PointType55PeriodicHistIndexRgstr                                                
-,pointType55DailyHistIndexRgstr            :: !PointType55DailyHistIndexRgstr                                           
-,pointType55ExtHistIndexRgstr              :: !PointType55ExtHistIndexRgstr                                           
-,pointType55HistFormat                     :: !PointType55HistFormat                                    
-,pointType55HistArchiveRgsr1               :: !PointType55HistArchiveRgsr1                                          
-,pointType55StartHistPnt1                  :: !PointType55StartHistPnt1                                 
-,pointType55EndHistPnt1                    :: !PointType55EndHistPnt1                                     
-,pointType55HistArchiveType1               :: !PointType55HistArchiveType1                                           
-,pointType55ConversionCode1                :: !PointType55ConversionCode1                                         
-,pointType55HistArchiveRgsr2               :: !PointType55HistArchiveRgsr2                                                             
-,pointType55StartHistPnt2                  :: !PointType55StartHistPnt2                                                      
-,pointType55EndHistPnt2                    :: !PointType55EndHistPnt2                                                           
-,pointType55HistArchiveType2               :: !PointType55HistArchiveType2                                                            
-,pointType55ConversionCode2                :: !PointType55ConversionCode2                                                            
-,pointType55HistArchiveRgsr3               :: !PointType55HistArchiveRgsr3                                                              
-,pointType55StartHistPnt3                  :: !PointType55StartHistPnt3                                                       
-,pointType55EndHistPnt3                    :: !PointType55EndHistPnt3                                                        
-,pointType55HistArchiveType3               :: !PointType55HistArchiveType3                                                              
-,pointType55ConversionCode3                :: !PointType55ConversionCode3                                                              
-,pointType55HistArchiveRgsr4               :: !PointType55HistArchiveRgsr4                                                   
-,pointType55StartHistPnt4                  :: !PointType55StartHistPnt4                                         
-,pointType55EndHistPnt4                    :: !PointType55EndHistPnt4                                          
-,pointType55HistArchiveType4               :: !PointType55HistArchiveType4                                                   
-,pointType55ConversionCode4                :: !PointType55ConversionCode4                                              
-,pointType55HistArchiveRgsr5               :: !PointType55HistArchiveRgsr5                                                        
-,pointType55StartHistPnt5                  :: !PointType55StartHistPnt5                                                   
-,pointType55EndHistPnt5                    :: !PointType55EndHistPnt5                                                   
-,pointType55HistArchiveType5               :: !PointType55HistArchiveType5                                                         
-,pointType55ConversionCode5                :: !PointType55ConversionCode5                                                       
-,pointType55HistArchiveRgsr6               :: !PointType55HistArchiveRgsr6                                                      
-,pointType55StartHistPnt6                  :: !PointType55StartHistPnt6                                                 
-,pointType55EndHistPnt6                    :: !PointType55EndHistPnt6                                                    
-,pointType55HistArchiveType6               :: !PointType55HistArchiveType6                                                       
-,pointType55ConversionCode6                :: !PointType55ConversionCode6                                                     
-,pointType55HistArchiveRgsr7               :: !PointType55HistArchiveRgsr7                                                    
-,pointType55StartHistPnt7                  :: !PointType55StartHistPnt7                                                      
-,pointType55EndHistPnt7                    :: !PointType55EndHistPnt7                                                    
-,pointType55HistArchiveType7               :: !PointType55HistArchiveType7                                                       
-,pointType55ConversionCode7                :: !PointType55ConversionCode7                                                       
-,pointType55HistArchiveRgsr8               :: !PointType55HistArchiveRgsr8                                                          
-,pointType55StartHistPnt8                  :: !PointType55StartHistPnt8                                                  
-,pointType55EndHistPnt8                    :: !PointType55EndHistPnt8                                                  
-,pointType55HistArchiveType8               :: !PointType55HistArchiveType8                                                         
-,pointType55ConversionCode8                :: !PointType55ConversionCode8                                                         
-,pointType55HistArchiveRgsr9               :: !PointType55HistArchiveRgsr9                                                         
-,pointType55StartHistPnt9                  :: !PointType55StartHistPnt9                                                    
-,pointType55EndHistPnt9                    :: !PointType55EndHistPnt9                                                    
-,pointType55HistArchiveType9               :: !PointType55HistArchiveType9                                                      
-,pointType55ConversionCode9                :: !PointType55ConversionCode9                                                        
-,pointType55HistArchiveRgsr10              :: !PointType55HistArchiveRgsr10                                                       
-,pointType55StartHistPnt10                 :: !PointType55StartHistPnt10                                                       
-,pointType55EndHistPnt10                   :: !PointType55EndHistPnt10                                                    
-,pointType55HistArchiveType10              :: !PointType55HistArchiveType10                                                          
-,pointType55ConversionCode10               :: !PointType55ConversionCode10                                                       
-,pointType55DateAccessRgstr                :: !PointType55DateAccessRgstr                                                        
-,pointType55TimeAccessRgstr                :: !PointType55TimeAccessRgstr                                                         
-,pointType55EFMExt                         :: !PointType55EFMExt                                              
-,pointType55HistArchiveRgsr11              :: !PointType55HistArchiveRgsr11                                                     
-,pointType55StartHistPnt11                 :: !PointType55StartHistPnt11                                              
-,pointType55EndHistPnt11                   :: !PointType55EndHistPnt11                                                      
-,pointType55HistArchiveType11              :: !PointType55HistArchiveType11                                                        
-,pointType55ConversionCode11               :: !PointType55ConversionCode11                                                      
-,pointType55HistArchiveRgsr12              :: !PointType55HistArchiveRgsr12                                                         
-,pointType55StartHistPnt12                 :: !PointType55StartHistPnt12                                                      
-,pointType55EndHistPnt12                   :: !PointType55EndHistPnt12                                                    
-,pointType55HistArchiveType12              :: !PointType55HistArchiveType12                                                   
-,pointType55ConversionCode12               :: !PointType55ConversionCode12                                                        
-,pointType55HistArchiveRgsr13              :: !PointType55HistArchiveRgsr13                                                          
-,pointType55StartHistPnt13                 :: !PointType55StartHistPnt13                                                      
-,pointType55EndHistPnt13                   :: !PointType55EndHistPnt13                                                  
-,pointType55HistArchiveType13              :: !PointType55HistArchiveType13                                                         
-,pointType55ConversionCode13               :: !PointType55ConversionCode13                                                         
-,pointType55HistArchiveRgsr14              :: !PointType55HistArchiveRgsr14                                                     
-,pointType55StartHistPnt14                 :: !PointType55StartHistPnt14                                                    
-,pointType55EndHistPnt14                   :: !PointType55EndHistPnt14                                                   
-,pointType55HistArchiveType14              :: !PointType55HistArchiveType14                                                          
-,pointType55ConversionCode14               :: !PointType55ConversionCode14                                                      
-,pointType55HistArchiveRgsr15              :: !PointType55HistArchiveRgsr15                                                       
-,pointType55StartHistPnt15                 :: !PointType55StartHistPnt15                                                      
-,pointType55EndHistPnt15                   :: !PointType55EndHistPnt15                                                     
-,pointType55HistArchiveType15              :: !PointType55HistArchiveType15                                                         
-,pointType55ConversionCode15               :: !PointType55ConversionCode15                                                     
-,pointType55HistArchiveRgsr16              :: !PointType55HistArchiveRgsr16                                                         
-,pointType55StartHistPnt16                 :: !PointType55StartHistPnt16                                                   
-,pointType55EndHistPnt16                   :: !PointType55EndHistPnt16                                                    
-,pointType55HistArchiveType16              :: !PointType55HistArchiveType16                                                       
-,pointType55ConversionCode16               :: !PointType55ConversionCode16                                                        
-,pointType55HistArchiveRgsr17              :: !PointType55HistArchiveRgsr17                                                          
-,pointType55StartHistPnt17                 :: !PointType55StartHistPnt17                                                      
-,pointType55EndHistPnt17                   :: !PointType55EndHistPnt17                                                  
-,pointType55HistArchiveType17              :: !PointType55HistArchiveType17                                                     
-,pointType55ConversionCode17               :: !PointType55ConversionCode17                                                         
-,pointType55HistArchiveRgsr18              :: !PointType55HistArchiveRgsr18                                                        
-,pointType55StartHistPnt18                 :: !PointType55StartHistPnt18                                                    
-,pointType55EndHistPnt18                   :: !PointType55EndHistPnt18                                                
-,pointType55HistArchiveType18              :: !PointType55HistArchiveType18                                                          
-,pointType55ConversionCode18               :: !PointType55ConversionCode18                                                         
-,pointType55HistArchiveRgsr19              :: !PointType55HistArchiveRgsr19                                                        
-,pointType55StartHistPnt19                 :: !PointType55StartHistPnt19                                                      
-,pointType55EndHistPnt19                   :: !PointType55EndHistPnt19                                                      
-,pointType55HistArchiveType19              :: !PointType55HistArchiveType19                                                      
-,pointType55ConversionCode19               :: !PointType55ConversionCode19                                                       
-,pointType55HistArchiveRgsr20              :: !PointType55HistArchiveRgsr20                                                          
-,pointType55StartHistPnt20                 :: !PointType55StartHistPnt20                                                        
-,pointType55EndHistPnt20                   :: !PointType55EndHistPnt20                                                     
-,pointType55HistArchiveType20              :: !PointType55HistArchiveType20                                                        
-,pointType55ConversionCode20               :: !PointType55ConversionCode20                                                         
+ pointType55EventAlarmRgstr                :: !PointType55EventAlarmRgstr
+,pointType55PeriodicHistIndexRgstr         :: !PointType55PeriodicHistIndexRgstr
+,pointType55DailyHistIndexRgstr            :: !PointType55DailyHistIndexRgstr
+,pointType55ExtHistIndexRgstr              :: !PointType55ExtHistIndexRgstr
+,pointType55HistFormat                     :: !PointType55HistFormat
+,pointType55HistArchiveRgsr1               :: !PointType55HistArchiveRgsr1
+,pointType55StartHistPnt1                  :: !PointType55StartHistPnt1
+,pointType55EndHistPnt1                    :: !PointType55EndHistPnt1
+,pointType55HistArchiveType1               :: !PointType55HistArchiveType1
+,pointType55ConversionCode1                :: !PointType55ConversionCode1
+,pointType55HistArchiveRgsr2               :: !PointType55HistArchiveRgsr2
+,pointType55StartHistPnt2                  :: !PointType55StartHistPnt2
+,pointType55EndHistPnt2                    :: !PointType55EndHistPnt2
+,pointType55HistArchiveType2               :: !PointType55HistArchiveType2
+,pointType55ConversionCode2                :: !PointType55ConversionCode2
+,pointType55HistArchiveRgsr3               :: !PointType55HistArchiveRgsr3
+,pointType55StartHistPnt3                  :: !PointType55StartHistPnt3
+,pointType55EndHistPnt3                    :: !PointType55EndHistPnt3
+,pointType55HistArchiveType3               :: !PointType55HistArchiveType3
+,pointType55ConversionCode3                :: !PointType55ConversionCode3
+,pointType55HistArchiveRgsr4               :: !PointType55HistArchiveRgsr4
+,pointType55StartHistPnt4                  :: !PointType55StartHistPnt4
+,pointType55EndHistPnt4                    :: !PointType55EndHistPnt4
+,pointType55HistArchiveType4               :: !PointType55HistArchiveType4
+,pointType55ConversionCode4                :: !PointType55ConversionCode4
+,pointType55HistArchiveRgsr5               :: !PointType55HistArchiveRgsr5
+,pointType55StartHistPnt5                  :: !PointType55StartHistPnt5
+,pointType55EndHistPnt5                    :: !PointType55EndHistPnt5
+,pointType55HistArchiveType5               :: !PointType55HistArchiveType5
+,pointType55ConversionCode5                :: !PointType55ConversionCode5
+,pointType55HistArchiveRgsr6               :: !PointType55HistArchiveRgsr6
+,pointType55StartHistPnt6                  :: !PointType55StartHistPnt6
+,pointType55EndHistPnt6                    :: !PointType55EndHistPnt6
+,pointType55HistArchiveType6               :: !PointType55HistArchiveType6
+,pointType55ConversionCode6                :: !PointType55ConversionCode6
+,pointType55HistArchiveRgsr7               :: !PointType55HistArchiveRgsr7
+,pointType55StartHistPnt7                  :: !PointType55StartHistPnt7
+,pointType55EndHistPnt7                    :: !PointType55EndHistPnt7
+,pointType55HistArchiveType7               :: !PointType55HistArchiveType7
+,pointType55ConversionCode7                :: !PointType55ConversionCode7
+,pointType55HistArchiveRgsr8               :: !PointType55HistArchiveRgsr8
+,pointType55StartHistPnt8                  :: !PointType55StartHistPnt8
+,pointType55EndHistPnt8                    :: !PointType55EndHistPnt8
+,pointType55HistArchiveType8               :: !PointType55HistArchiveType8
+,pointType55ConversionCode8                :: !PointType55ConversionCode8
+,pointType55HistArchiveRgsr9               :: !PointType55HistArchiveRgsr9
+,pointType55StartHistPnt9                  :: !PointType55StartHistPnt9
+,pointType55EndHistPnt9                    :: !PointType55EndHistPnt9
+,pointType55HistArchiveType9               :: !PointType55HistArchiveType9
+,pointType55ConversionCode9                :: !PointType55ConversionCode9
+,pointType55HistArchiveRgsr10              :: !PointType55HistArchiveRgsr10
+,pointType55StartHistPnt10                 :: !PointType55StartHistPnt10
+,pointType55EndHistPnt10                   :: !PointType55EndHistPnt10
+,pointType55HistArchiveType10              :: !PointType55HistArchiveType10
+,pointType55ConversionCode10               :: !PointType55ConversionCode10
+,pointType55DateAccessRgstr                :: !PointType55DateAccessRgstr
+,pointType55TimeAccessRgstr                :: !PointType55TimeAccessRgstr
+,pointType55EFMExt                         :: !PointType55EFMExt
+,pointType55HistArchiveRgsr11              :: !PointType55HistArchiveRgsr11
+,pointType55StartHistPnt11                 :: !PointType55StartHistPnt11
+,pointType55EndHistPnt11                   :: !PointType55EndHistPnt11
+,pointType55HistArchiveType11              :: !PointType55HistArchiveType11
+,pointType55ConversionCode11               :: !PointType55ConversionCode11
+,pointType55HistArchiveRgsr12              :: !PointType55HistArchiveRgsr12
+,pointType55StartHistPnt12                 :: !PointType55StartHistPnt12
+,pointType55EndHistPnt12                   :: !PointType55EndHistPnt12
+,pointType55HistArchiveType12              :: !PointType55HistArchiveType12
+,pointType55ConversionCode12               :: !PointType55ConversionCode12
+,pointType55HistArchiveRgsr13              :: !PointType55HistArchiveRgsr13
+,pointType55StartHistPnt13                 :: !PointType55StartHistPnt13
+,pointType55EndHistPnt13                   :: !PointType55EndHistPnt13
+,pointType55HistArchiveType13              :: !PointType55HistArchiveType13
+,pointType55ConversionCode13               :: !PointType55ConversionCode13
+,pointType55HistArchiveRgsr14              :: !PointType55HistArchiveRgsr14
+,pointType55StartHistPnt14                 :: !PointType55StartHistPnt14
+,pointType55EndHistPnt14                   :: !PointType55EndHistPnt14
+,pointType55HistArchiveType14              :: !PointType55HistArchiveType14
+,pointType55ConversionCode14               :: !PointType55ConversionCode14
+,pointType55HistArchiveRgsr15              :: !PointType55HistArchiveRgsr15
+,pointType55StartHistPnt15                 :: !PointType55StartHistPnt15
+,pointType55EndHistPnt15                   :: !PointType55EndHistPnt15
+,pointType55HistArchiveType15              :: !PointType55HistArchiveType15
+,pointType55ConversionCode15               :: !PointType55ConversionCode15
+,pointType55HistArchiveRgsr16              :: !PointType55HistArchiveRgsr16
+,pointType55StartHistPnt16                 :: !PointType55StartHistPnt16
+,pointType55EndHistPnt16                   :: !PointType55EndHistPnt16
+,pointType55HistArchiveType16              :: !PointType55HistArchiveType16
+,pointType55ConversionCode16               :: !PointType55ConversionCode16
+,pointType55HistArchiveRgsr17              :: !PointType55HistArchiveRgsr17
+,pointType55StartHistPnt17                 :: !PointType55StartHistPnt17
+,pointType55EndHistPnt17                   :: !PointType55EndHistPnt17
+,pointType55HistArchiveType17              :: !PointType55HistArchiveType17
+,pointType55ConversionCode17               :: !PointType55ConversionCode17
+,pointType55HistArchiveRgsr18              :: !PointType55HistArchiveRgsr18
+,pointType55StartHistPnt18                 :: !PointType55StartHistPnt18
+,pointType55EndHistPnt18                   :: !PointType55EndHistPnt18
+,pointType55HistArchiveType18              :: !PointType55HistArchiveType18
+,pointType55ConversionCode18               :: !PointType55ConversionCode18
+,pointType55HistArchiveRgsr19              :: !PointType55HistArchiveRgsr19
+,pointType55StartHistPnt19                 :: !PointType55StartHistPnt19
+,pointType55EndHistPnt19                   :: !PointType55EndHistPnt19
+,pointType55HistArchiveType19              :: !PointType55HistArchiveType19
+,pointType55ConversionCode19               :: !PointType55ConversionCode19
+,pointType55HistArchiveRgsr20              :: !PointType55HistArchiveRgsr20
+,pointType55StartHistPnt20                 :: !PointType55StartHistPnt20
+,pointType55EndHistPnt20                   :: !PointType55EndHistPnt20
+,pointType55HistArchiveType20              :: !PointType55HistArchiveType20
+,pointType55ConversionCode20               :: !PointType55ConversionCode20
   
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
                                   
 type PointType55EventAlarmRgstr             = Word16                                                                           
 type PointType55PeriodicHistIndexRgstr      = Word16                                                                                              

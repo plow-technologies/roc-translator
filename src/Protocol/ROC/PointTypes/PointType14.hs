@@ -1,14 +1,21 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude  #-}
 
 module Protocol.ROC.PointTypes.PointType14 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
+import Data.ByteString    (ByteString)
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           getWord32le,
+                           Get)
+import Data.Word          (Word8,Word16,Word32)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType14 = PointType14 {
  pointType14PointTag                         :: !PointType14PointTag       
@@ -52,9 +59,9 @@ data PointType14 = PointType14 {
 ,pointType14RecBufferAddress                 :: !PointType14RecBufferAddress    
 ,pointType14TransBufferAddress               :: !PointType14TransBufferAddress  
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType14PointTag                     = BS.ByteString            
+type PointType14PointTag                     = ByteString            
 type PointType14CommBaudRate                 = Word16             
 type PointType14CommStopBit                  = Word8            
 type PointType14NumDataBits                  = Word8                
@@ -72,8 +79,8 @@ type PointType14ValidRecCount                = Word16
 type PointType14ModemStat                    = Word8                      
 type PointType14ModemType                    = Word8              
 type PointType14ConnectTime                  = Float                
-type PointType14CFGCommand                   = BS.ByteString                                          
-type PointType14ConnectCommand               = BS.ByteString                     
+type PointType14CFGCommand                   = ByteString                                          
+type PointType14ConnectCommand               = ByteString                     
 type PointType14DisconnectTime               = Float                   
 type PointType14InactivityTime               = Float                   
 type PointType14RBXTimeBase1                 = Float                 

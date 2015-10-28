@@ -1,16 +1,24 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude  #-}
 
 module Protocol.ROC.PointTypes.PointType2 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Int
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           getWord32le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Int           (Int16)
+import Data.Word          (Word8,Word16,Word32)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (anyButNull,getInt16)
 
 data PointType2 = PointType2 {
  pointType2PointTag            :: !PointType2PointTag       
@@ -31,16 +39,16 @@ data PointType2 = PointType2 {
 ,pointType2ScanningMode        :: !PointType2ScanningMode   
 ,pointType2ManualState         :: !PointType2ManualState    
 ,pointType2PhysicalState       :: !PointType2PhysicalState  
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType2PointTag              = BS.ByteString
+type PointType2PointTag              = ByteString
 type PointType2TimeOn                = Word16
 type PointType2Spare                 = Word8
 type PointType2Status                = Bool
 type PointType2BitfieldHigh          = Word8
 type PointType2BitfieldLow           = Word8
 type PointType2AccumulatedValue      = Word32
-type PointType2Units                 = BS.ByteString
+type PointType2Units                 = ByteString
 type PointType2CycleTime             = Word16
 type PointType2Count0                = Int16
 type PointType2Count100              = Int16

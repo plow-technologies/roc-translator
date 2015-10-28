@@ -1,40 +1,46 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType56 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Int
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Int           (Int16)
+import Data.Word          (Word8,Word16)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (getInt16)
 
 data PointType56 = PointType56 {
  
- pointType56PointTag                    :: !PointType56PointTag                                 
-,pointType56CalibZeroADValue            :: !PointType56CalibZeroADValue                                                   
-,pointType56CalibMdpnt1ADValue          :: !PointType56CalibMdpnt1ADValue                                                       
-,pointType56CalibMdpnt2ADValue          :: !PointType56CalibMdpnt2ADValue                                                     
-,pointType56CalibMdpnt3ADValue          :: !PointType56CalibMdpnt3ADValue                                                         
-,pointType56CalibSpanADValue            :: !PointType56CalibSpanADValue                                                           
-,pointType56CalibZeroEUValue            :: !PointType56CalibZeroEUValue                                                        
-,pointType56CalibMdpnt1EUValue          :: !PointType56CalibMdpnt1EUValue                                                   
-,pointType56CalibMdpnt2EUValue          :: !PointType56CalibMdpnt2EUValue                                                       
-,pointType56CalibMdpnt3EUValue          :: !PointType56CalibMdpnt3EUValue                                                   
-,pointType56CalibSpanEUValue            :: !PointType56CalibSpanEUValue                                                       
-,pointType56Offset                      :: !PointType56Offset                                        
-,pointType56CalibSetEUValue             :: !PointType56CalibSetEUValue                                                                          
-,pointType56ManualEU                    :: !PointType56ManualEU                                                
-,pointType56CalibTime                   :: !PointType56CalibTime                                          
-,pointType56CalibMode                   :: !PointType56CalibMode                                              
-,pointType56CalibType                   :: !PointType56CalibType                                          
+ pointType56PointTag                    :: !PointType56PointTag
+,pointType56CalibZeroADValue            :: !PointType56CalibZeroADValue
+,pointType56CalibMdpnt1ADValue          :: !PointType56CalibMdpnt1ADValue
+,pointType56CalibMdpnt2ADValue          :: !PointType56CalibMdpnt2ADValue
+,pointType56CalibMdpnt3ADValue          :: !PointType56CalibMdpnt3ADValue
+,pointType56CalibSpanADValue            :: !PointType56CalibSpanADValue
+,pointType56CalibZeroEUValue            :: !PointType56CalibZeroEUValue
+,pointType56CalibMdpnt1EUValue          :: !PointType56CalibMdpnt1EUValue
+,pointType56CalibMdpnt2EUValue          :: !PointType56CalibMdpnt2EUValue
+,pointType56CalibMdpnt3EUValue          :: !PointType56CalibMdpnt3EUValue
+,pointType56CalibSpanEUValue            :: !PointType56CalibSpanEUValue
+,pointType56Offset                      :: !PointType56Offset
+,pointType56CalibSetEUValue             :: !PointType56CalibSetEUValue
+,pointType56ManualEU                    :: !PointType56ManualEU
+,pointType56CalibTime                   :: !PointType56CalibTime
+,pointType56CalibMode                   :: !PointType56CalibMode
+,pointType56CalibType                   :: !PointType56CalibType
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)
 
-type PointType56PointTag                 = BS.ByteString                                                                           
+type PointType56PointTag                 = ByteString                                                                           
 type PointType56CalibZeroADValue         = Int16                                                                        
 type PointType56CalibMdpnt1ADValue       = Int16                                                                 
 type PointType56CalibMdpnt2ADValue       = Int16                                                                   

@@ -1,67 +1,75 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType98 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
-import Protocol.ROC.Float
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           getWord32le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8,Word16,Word32)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (anyButNull)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType98 = PointType98 {
   
- pointType98IdTag                        :: !PointType98IdTag                           
-,pointType98MiscStorage1                 :: !PointType98MiscStorage1                           
-,pointType98MiscStorage2                 :: !PointType98MiscStorage2                           
-,pointType98MiscStorage3                 :: !PointType98MiscStorage3                           
-,pointType98MiscStorage4                 :: !PointType98MiscStorage4                           
-,pointType98MiscStorage5                 :: !PointType98MiscStorage5                           
-,pointType98MiscStorage6                 :: !PointType98MiscStorage6                           
-,pointType98MiscStorage7                 :: !PointType98MiscStorage7                           
-,pointType98MiscStorage8                 :: !PointType98MiscStorage8                           
-,pointType98MiscStorage9                 :: !PointType98MiscStorage9                           
-,pointType98MiscStorage10                :: !PointType98MiscStorage10                          
-,pointType98MiscStorage11                :: !PointType98MiscStorage11                           
-,pointType98MiscStorage12                :: !PointType98MiscStorage12                           
-,pointType98MiscStorage13                :: !PointType98MiscStorage13                           
-,pointType98MiscStorage14                :: !PointType98MiscStorage14                           
-,pointType98MiscStorage15                :: !PointType98MiscStorage15                           
-,pointType98MiscStorage16                :: !PointType98MiscStorage16                           
-,pointType98MiscStorage17                :: !PointType98MiscStorage17                           
-,pointType98MiscStorage18                :: !PointType98MiscStorage18                           
-,pointType98MiscStorage19                :: !PointType98MiscStorage19                           
-,pointType98MiscStorage20                :: !PointType98MiscStorage20                           
-,pointType98MiscStorage21                :: !PointType98MiscStorage21                           
-,pointType98MiscStorage22                :: !PointType98MiscStorage22                           
-,pointType98MiscStorage23                :: !PointType98MiscStorage23                           
-,pointType98MiscStorage24                :: !PointType98MiscStorage24                           
-,pointType98MiscStorage25                :: !PointType98MiscStorage25                           
-,pointType98MiscStorage26                :: !PointType98MiscStorage26                           
-,pointType98MiscStorage27                :: !PointType98MiscStorage27                           
-,pointType98MiscStorage28                :: !PointType98MiscStorage28                           
-,pointType98MiscStorage29                :: !PointType98MiscStorage29                           
-,pointType98MiscStorage30                :: !PointType98MiscStorage30                           
-,pointType98MiscStorage31                :: !PointType98MiscStorage31                           
-,pointType98MiscStorage32                :: !PointType98MiscStorage32                           
-,pointType98MiscStorage33                :: !PointType98MiscStorage33                           
-,pointType98MiscStorage34                :: !PointType98MiscStorage34                           
-,pointType98MiscStorage35                :: !PointType98MiscStorage35                           
-,pointType98MiscStorage36                :: !PointType98MiscStorage36                           
-,pointType98MiscStorage37                :: !PointType98MiscStorage37                           
-,pointType98MiscStorage38                :: !PointType98MiscStorage38                           
-,pointType98MiscStorage39                :: !PointType98MiscStorage39                           
-,pointType98MiscStorage40                :: !PointType98MiscStorage40                           
-,pointType98MiscStorage41                :: !PointType98MiscStorage41                           
-,pointType98MiscStorage42                :: !PointType98MiscStorage42                           
-,pointType98EnableExtSoftPointLog        :: !PointType98EnableExtSoftPointLog                           
+ pointType98IdTag                        :: !PointType98IdTag
+,pointType98MiscStorage1                 :: !PointType98MiscStorage1
+,pointType98MiscStorage2                 :: !PointType98MiscStorage2
+,pointType98MiscStorage3                 :: !PointType98MiscStorage3
+,pointType98MiscStorage4                 :: !PointType98MiscStorage4
+,pointType98MiscStorage5                 :: !PointType98MiscStorage5
+,pointType98MiscStorage6                 :: !PointType98MiscStorage6
+,pointType98MiscStorage7                 :: !PointType98MiscStorage7
+,pointType98MiscStorage8                 :: !PointType98MiscStorage8
+,pointType98MiscStorage9                 :: !PointType98MiscStorage9
+,pointType98MiscStorage10                :: !PointType98MiscStorage10
+,pointType98MiscStorage11                :: !PointType98MiscStorage11
+,pointType98MiscStorage12                :: !PointType98MiscStorage12
+,pointType98MiscStorage13                :: !PointType98MiscStorage13
+,pointType98MiscStorage14                :: !PointType98MiscStorage14
+,pointType98MiscStorage15                :: !PointType98MiscStorage15
+,pointType98MiscStorage16                :: !PointType98MiscStorage16
+,pointType98MiscStorage17                :: !PointType98MiscStorage17
+,pointType98MiscStorage18                :: !PointType98MiscStorage18
+,pointType98MiscStorage19                :: !PointType98MiscStorage19
+,pointType98MiscStorage20                :: !PointType98MiscStorage20
+,pointType98MiscStorage21                :: !PointType98MiscStorage21
+,pointType98MiscStorage22                :: !PointType98MiscStorage22
+,pointType98MiscStorage23                :: !PointType98MiscStorage23
+,pointType98MiscStorage24                :: !PointType98MiscStorage24
+,pointType98MiscStorage25                :: !PointType98MiscStorage25
+,pointType98MiscStorage26                :: !PointType98MiscStorage26
+,pointType98MiscStorage27                :: !PointType98MiscStorage27
+,pointType98MiscStorage28                :: !PointType98MiscStorage28
+,pointType98MiscStorage29                :: !PointType98MiscStorage29
+,pointType98MiscStorage30                :: !PointType98MiscStorage30
+,pointType98MiscStorage31                :: !PointType98MiscStorage31
+,pointType98MiscStorage32                :: !PointType98MiscStorage32
+,pointType98MiscStorage33                :: !PointType98MiscStorage33
+,pointType98MiscStorage34                :: !PointType98MiscStorage34
+,pointType98MiscStorage35                :: !PointType98MiscStorage35
+,pointType98MiscStorage36                :: !PointType98MiscStorage36
+,pointType98MiscStorage37                :: !PointType98MiscStorage37
+,pointType98MiscStorage38                :: !PointType98MiscStorage38
+,pointType98MiscStorage39                :: !PointType98MiscStorage39
+,pointType98MiscStorage40                :: !PointType98MiscStorage40
+,pointType98MiscStorage41                :: !PointType98MiscStorage41
+,pointType98MiscStorage42                :: !PointType98MiscStorage42
+,pointType98EnableExtSoftPointLog        :: !PointType98EnableExtSoftPointLog
                              
   
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
                                   
-type PointType98IdTag                    = BS.ByteString                                  
+type PointType98IdTag                    = ByteString                                  
 type PointType98MiscStorage1             = Float                                 
 type PointType98MiscStorage2             = Float                                 
 type PointType98MiscStorage3             = Float                                 

@@ -1,42 +1,45 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType44 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Int
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,getWord32le,Get)
+import Data.ByteString    (ByteString)
+import Data.Int           (Int16)
+import Data.Word          (Word32) 
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (getInt16)
 
 data PointType44 = PointType44 {
- pointType44PointTag                :: !PointType44PointTag                                      
-,pointType44PwrStatus               :: !PointType44PwrStatus                                               
-,pointType44PwrMode                 :: !PointType44PwrMode                                                    
-,pointType44ValidRX                 :: !PointType44ValidRX                                                       
-,pointType44StartTime1              :: !PointType44StartTime1                                           
-,pointType44StartTime2              :: !PointType44StartTime2                                              
-,pointType44StartTime3              :: !PointType44StartTime3                                                   
-,pointType44OnTime1                 :: !PointType44OnTime1                                             
-,pointType44OnTime2                 :: !PointType44OnTime2                                          
-,pointType44OnTime3                 :: !PointType44OnTime3                                                    
-,pointType44OffTime1                :: !PointType44OffTime1                                                   
-,pointType44OffTime2                :: !PointType44OffTime2                                                         
-,pointType44OffTime3                :: !PointType44OffTime3                                              
-,pointType44ActiveTimeZone          :: !PointType44ActiveTimeZone                                                                                 
-,pointType44HoldTime                :: !PointType44HoldTime                                           
-,pointType44PwrTime                 :: !PointType44PwrTime                        
-,pointType44DONum                   :: !PointType44DONum                               
-,pointType44LowBattery              :: !PointType44LowBattery                                    
-,pointType44OnCounter               :: !PointType44OnCounter                                       
-,pointType44OffCounter              :: !PointType44OffCounter                            
+ pointType44PointTag                :: !PointType44PointTag
+,pointType44PwrStatus               :: !PointType44PwrStatus
+,pointType44PwrMode                 :: !PointType44PwrMode
+,pointType44ValidRX                 :: !PointType44ValidRX
+,pointType44StartTime1              :: !PointType44StartTime1
+,pointType44StartTime2              :: !PointType44StartTime2
+,pointType44StartTime3              :: !PointType44StartTime3
+,pointType44OnTime1                 :: !PointType44OnTime1
+,pointType44OnTime2                 :: !PointType44OnTime2
+,pointType44OnTime3                 :: !PointType44OnTime3
+,pointType44OffTime1                :: !PointType44OffTime1
+,pointType44OffTime2                :: !PointType44OffTime2
+,pointType44OffTime3                :: !PointType44OffTime3
+,pointType44ActiveTimeZone          :: !PointType44ActiveTimeZone
+,pointType44HoldTime                :: !PointType44HoldTime
+,pointType44PwrTime                 :: !PointType44PwrTime
+,pointType44DONum                   :: !PointType44DONum
+,pointType44LowBattery              :: !PointType44LowBattery
+,pointType44OnCounter               :: !PointType44OnCounter
+,pointType44OffCounter              :: !PointType44OffCounter
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType44PointTag             =  BS.ByteString                                                
+type PointType44PointTag             =  ByteString                                                
 type PointType44PwrStatus            =  Int16                                       
 type PointType44PwrMode              =  Int16                                      
 type PointType44ValidRX              =  Int16                                      

@@ -1,43 +1,46 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType93 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
-import Data.Time.Clock.POSIX
+import Data.Binary.Get       (getByteString,getWord8,getWord16le,Get)
+import Data.ByteString       (ByteString)
+import Data.Time.Clock.POSIX (POSIXTime)
+import Data.Word             (Word8,Word16)
+import Prelude               (($),
+                              return,
+                              Bool,
+                              Eq,
+ --                           Read,
+                              Show)
+import Protocol.ROC.Utils     (anyButNull,getPosixTime)
 
 data PointType93 = PointType93 {
  
- pointType93LicenseInstallationStatus                :: !PointType93LicenseInstallationStatus                         
-,pointType93LicenseNumber                            :: !PointType93LicenseNumber                             
-,pointType93ApplicationName                          :: !PointType93ApplicationName                                      
-,pointType93ApplicationProvider                      :: !PointType93ApplicationProvider                          
-,pointType93ApplicationCode                          :: !PointType93ApplicationCode                           
-,pointType93ApplicationVersion                       :: !PointType93ApplicationVersion                             
-,pointType93QuantityTotal                            :: !PointType93QuantityTotal                                   
-,pointType93QuantityRemaining                        :: !PointType93QuantityRemaining                                   
-,pointType93ExpirationData                           :: !PointType93ExpirationData                             
-,pointType93LicenseValidityState                     :: !PointType93LicenseValidityState                                   
-,pointType93LiceseCreationDate                       :: !PointType93LiceseCreationDate                                   
+ pointType93LicenseInstallationStatus                :: !PointType93LicenseInstallationStatus
+,pointType93LicenseNumber                            :: !PointType93LicenseNumber
+,pointType93ApplicationName                          :: !PointType93ApplicationName
+,pointType93ApplicationProvider                      :: !PointType93ApplicationProvider
+,pointType93ApplicationCode                          :: !PointType93ApplicationCode
+,pointType93ApplicationVersion                       :: !PointType93ApplicationVersion
+,pointType93QuantityTotal                            :: !PointType93QuantityTotal
+,pointType93QuantityRemaining                        :: !PointType93QuantityRemaining
+,pointType93ExpirationData                           :: !PointType93ExpirationData
+,pointType93LicenseValidityState                     :: !PointType93LicenseValidityState
+,pointType93LicenseCreationDate                       :: !PointType93LicenseCreationDate
 
-} deriving (Eq, Show, Generic)                       
+} deriving (Eq,Show) --Read                       
 
 type PointType93LicenseInstallationStatus            = Bool                  
 type PointType93LicenseNumber                        = Word8                  
-type PointType93ApplicationName                      = BS.ByteString                    
-type PointType93ApplicationProvider                  = BS.ByteString                          
+type PointType93ApplicationName                      = ByteString                    
+type PointType93ApplicationProvider                  = ByteString                          
 type PointType93ApplicationCode                      = Word16                          
-type PointType93ApplicationVersion                   = BS.ByteString                                                 
+type PointType93ApplicationVersion                   = ByteString                                                 
 type PointType93QuantityTotal                        = Word8                  
 type PointType93QuantityRemaining                    = Word8                  
 type PointType93ExpirationData                       = POSIXTime                                                 
 type PointType93LicenseValidityState                 = Word8                  
-type PointType93LiceseCreationDate                   = POSIXTime                    
+type PointType93LicenseCreationDate                   = POSIXTime                    
 
 pointType93Parser :: Get PointType93
 pointType93Parser = do 
@@ -52,8 +55,8 @@ pointType93Parser = do
   quantityRemaining <- getWord8 
   expirationData <- getPosixTime 
   licenseValidityState <- getWord8 
-  liceseCreationDate <- getPosixTime 
+  licenseCreationDate <- getPosixTime 
   
   
   return $ PointType93 licenseInstallationStatus licenseNumber applicationName applicationProvider applicationCode applicationVersion quantityTotal quantityRemaining 
-    expirationData licenseValidityState liceseCreationDate  
+    expirationData licenseValidityState licenseCreationDate  

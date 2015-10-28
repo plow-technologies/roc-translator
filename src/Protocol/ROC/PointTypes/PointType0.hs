@@ -1,17 +1,22 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType0 where
 
-import GHC.Generics
-import Data.Word
-import Data.Binary
-import Protocol.ROC.Utils
-import Protocol.ROC.Float
+import Data.Binary.Get     (Get)
+import Data.Word           (Word8)
+import Prelude             (($),
+                            return,
+                            Eq,
+                            Float,
+                            Read,
+                            Show)
+
+import Protocol.ROC.Utils  (getTLP)
+import Protocol.ROC.Float  (getIeeeFloat32)
 
 data PointType0 = PointType0 {
   
- pointType0SequenceRevisionNum         :: !PointType0SequenceRevisionNum                         
+ pointType0SequenceRevisionNum         :: !PointType0SequenceRevisionNum
 ,pointType0TLPData1                    :: !PointType0TLPData1                         
 ,pointType0TLPData2                    :: !PointType0TLPData2                         
 ,pointType0TLPData3                    :: !PointType0TLPData3                         
@@ -57,7 +62,7 @@ data PointType0 = PointType0 {
 ,pointType0TLPData43                   :: !PointType0TLPData43                         
 ,pointType0TLPData44                   :: !PointType0TLPData44                               
   
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
                                   
 type PointType0SequenceRevisionNum     = Float     
 type PointType0TLPData1                = [Word8]     

@@ -1,16 +1,26 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType1 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Int
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get     (Get,
+                            getByteString,
+                            getWord8,
+                            getWord16le,
+                            getWord32le)
+import Data.ByteString     (ByteString)
+import Data.Int            (Int16)
+import Data.Word           (Word8,
+                            Word16,
+                            Word32)
+import Prelude             (($),
+                            return,
+                            Bool,
+                            Eq,
+                            Float,
+                            Read,
+                            Show)
+import Protocol.ROC.Float  (getIeeeFloat32)
+import Protocol.ROC.Utils  (anyButNull,getInt16)
 
 data PointType1 = PointType1 {
  pointType1PointTag             :: !PointType1PointTag          
@@ -36,9 +46,9 @@ data PointType1 = PointType1 {
 ,pointType1AlarmDeadband        :: !PointType1AlarmDeadband                   
 ,pointType1EUValue              :: !PointType1EUValue                   
 ,pointType1TDICount             :: !PointType1TDICount                    
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType1PointTag              = BS.ByteString
+type PointType1PointTag              = ByteString
 type PointType1Filter                = Word8
 type PointType1Status                = Bool
 type PointType1BitfieldHigh          = Word8
@@ -49,7 +59,7 @@ type PointType1OffCounter            = Word32
 type PointType1PulseWidth0           = Int16
 type PointType1PulseWidth100         = Int16
 type PointType1MaxTimePulse          = Word16
-type PointType1Units                 = BS.ByteString
+type PointType1Units                 = ByteString
 type PointType1ScanPeriod            = Word16
 type PointType1LowReading            = Float
 type PointType1HighReading           = Float
@@ -60,8 +70,7 @@ type PointType1HiHiAlarm             = Float
 type PointType1RateAlarm             = Float
 type PointType1AlarmDeadband         = Float
 type PointType1EUValue               = Float
-type PointType1TDICount              = Word16
-                       
+type PointType1TDICount              = Word16                       
 
 pointType1Parser :: Get PointType1 
 pointType1Parser = do 

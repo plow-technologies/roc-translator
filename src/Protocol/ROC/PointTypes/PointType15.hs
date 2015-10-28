@@ -1,15 +1,22 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude  #-}
 
 module Protocol.ROC.PointTypes.PointType15 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
-import Protocol.ROC.Float
+import Data.ByteString    (ByteString)
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           Get)
+import Data.Word          (Word8,Word16)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (anyButNull)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 data PointType15 = PointType15 {
  pointType15ROCAddress                                 :: !PointType15ROCAddress                                                
@@ -40,11 +47,11 @@ data PointType15 = PointType15 {
 ,pointType15UnitsFlag                                  :: !PointType15UnitsFlag                                             
 
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType15ROCAddress                             = Word8                                                                       
 type PointType15ROCGroup                               = Word8                                                                       
-type PointType15StationName                            = BS.ByteString                                                               
+type PointType15StationName                            = ByteString                                                               
 type PointType15ActvPIDs                               = Word8                                                                       
 type PointType15ActvAGAMtrRuns                         = Word8                                                                       
 type PointType15ActvTankorNumFSTorSysStatus            = Word8                                                                       
@@ -53,11 +60,11 @@ type PointType15NumRAM1DataPntsorNumExtHistPnts        = Word8
 type PointType15NumRAM2DataPntsorHist3DataPnts         = Word8                                                                       
 type PointType15ForceEndOfDay                          = Bool                                                                        
 type PointType15ContractHour                           = Word8                                                                       
-type PointType15VersionName                            = BS.ByteString                                                               
-type PointType15MfgId                                  = BS.ByteString                                                               
-type PointType15TimeCreated                            = BS.ByteString                                                               
-type PointType15UnitSerialNum                          = BS.ByteString                                                               
-type PointType15CustomerName                           = BS.ByteString                                                               
+type PointType15VersionName                            = ByteString                                                               
+type PointType15MfgId                                  = ByteString                                                               
+type PointType15TimeCreated                            = ByteString                                                               
+type PointType15UnitSerialNum                          = ByteString                                                               
+type PointType15CustomerName                           = ByteString                                                               
 type PointType15MaxNumPIDs                             = Word8                                                                       
 type PointType15MaxNumAGAMtrRuns                       = Word8                                                                       
 type PointType15MaxNumTanks                            = Word8                                                                       

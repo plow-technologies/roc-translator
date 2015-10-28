@@ -1,49 +1,53 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType13 where
 
-import GHC.Generics
-import Data.Word
-import Data.Binary
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getWord8,Get)
+import Data.Word          (Word8)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (anyButNull)
 
 data PointType13 = PointType13 {
- pointType13CRCCheck                    :: !PointType13CRCCheck                                  
-,pointType13DiPi                        :: !PointType13DiPi                               
-,pointType13EnableLCDCalc2Prog          :: !PointType13EnableLCDCalc2Prog                               
-,pointType13EnableLOICalc2Prog          :: !PointType13EnableLOICalc2Prog                               
-,pointType13ClearFSTDisplay             :: !PointType13ClearFSTDisplay                               
-,pointType13EnableComm1UserProg         :: !PointType13EnableComm1UserProg                               
-,pointType13EnableComm2UserProg         :: !PointType13EnableComm2UserProg                               
-,pointType13EnableUserCalcProg          :: !PointType13EnableUserCalcProg                               
-,pointType13LOIRTSTetSeconds            :: !PointType13LOIRTSTetSeconds                              
-,pointType13Comm1RTSTestSeconds         :: !PointType13Comm1RTSTestSeconds                               
-,pointType13Comm2RTSTestSeconds         :: !PointType13Comm2RTSTestSeconds                               
-,pointType13ClearCFGMem                 :: !PointType13ClearCFGMem                               
-,pointType13EnableScanIO                :: !PointType13EnableScanIO                               
-,pointType13EnableAuxOut2               :: !PointType13EnableAuxOut2                               
-,pointType13AuxOut1OnOrPlusTVolt        :: !PointType13AuxOut1OnOrPlusTVolt                               
-,pointType13ColdStartOption             :: !PointType13ColdStartOption                               
-,pointType13WarmStart                   :: !PointType13WarmStart                               
-,pointType13ReadInOut                   :: !PointType13ReadInOut                               
-,pointType13WriteCFGMem                 :: !PointType13WriteCFGMem                               
-,pointType13CFGMemWriteCmpl             :: !PointType13CFGMemWriteCmpl                               
-,pointType13EnableEventLogorInitHist    :: !PointType13EnableEventLogorInitHist                               
-,pointType13MngLOISec                   :: !PointType13MngLOISec                               
-,pointType13MngCommPort1Sec             :: !PointType13MngCommPort1Sec                               
-,pointType13MngCommPort2Sec             :: !PointType13MngCommPort2Sec                               
-,pointType13TermTypeInstdOrMngLCDSec    :: !PointType13TermTypeInstdOrMngLCDSec                               
-,pointType13CommPassThroughMode         :: !PointType13CommPassThroughMode                               
-,pointType13Mng6PointIOSetupFlag        :: !PointType13Mng6PointIOSetupFlag                               
-,pointType13MngCommPort3Sec             :: !PointType13MngCommPort3Sec                               
-,pointType13Comm3RTSTestSeconds         :: !PointType13Comm3RTSTestSeconds                               
-,pointType13MngCFGNumDailyHistLogs      :: !PointType13MngCFGNumDailyHistLogs                               
-,pointType13MngHistTImeStampOpt         :: !PointType13MngHistTImeStampOpt                               
-,pointType13MngCFGNumDailyHitLogs       :: !PointType13MngCFGNumDailyHitLogs                               
+ pointType13CRCCheck                    :: !PointType13CRCCheck
+,pointType13DiPi                        :: !PointType13DiPi
+,pointType13EnableLCDCalc2Prog          :: !PointType13EnableLCDCalc2Prog
+,pointType13EnableLOICalc2Prog          :: !PointType13EnableLOICalc2Prog
+,pointType13ClearFSTDisplay             :: !PointType13ClearFSTDisplay
+,pointType13EnableComm1UserProg         :: !PointType13EnableComm1UserProg
+,pointType13EnableComm2UserProg         :: !PointType13EnableComm2UserProg
+,pointType13EnableUserCalcProg          :: !PointType13EnableUserCalcProg
+,pointType13LOIRTSTetSeconds            :: !PointType13LOIRTSTetSeconds
+,pointType13Comm1RTSTestSeconds         :: !PointType13Comm1RTSTestSeconds
+,pointType13Comm2RTSTestSeconds         :: !PointType13Comm2RTSTestSeconds
+,pointType13ClearCFGMem                 :: !PointType13ClearCFGMem
+,pointType13EnableScanIO                :: !PointType13EnableScanIO
+,pointType13EnableAuxOut2               :: !PointType13EnableAuxOut2
+,pointType13AuxOut1OnOrPlusTVolt        :: !PointType13AuxOut1OnOrPlusTVolt
+,pointType13ColdStartOption             :: !PointType13ColdStartOption
+,pointType13WarmStart                   :: !PointType13WarmStart
+,pointType13ReadInOut                   :: !PointType13ReadInOut
+,pointType13WriteCFGMem                 :: !PointType13WriteCFGMem
+,pointType13CFGMemWriteCmpl             :: !PointType13CFGMemWriteCmpl
+,pointType13EnableEventLogorInitHist    :: !PointType13EnableEventLogorInitHist
+,pointType13MngLOISec                   :: !PointType13MngLOISec
+,pointType13MngCommPort1Sec             :: !PointType13MngCommPort1Sec
+,pointType13MngCommPort2Sec             :: !PointType13MngCommPort2Sec
+,pointType13TermTypeInstdOrMngLCDSec    :: !PointType13TermTypeInstdOrMngLCDSec
+,pointType13CommPassThroughMode         :: !PointType13CommPassThroughMode
+,pointType13Mng6PointIOSetupFlag        :: !PointType13Mng6PointIOSetupFlag
+,pointType13MngCommPort3Sec             :: !PointType13MngCommPort3Sec
+,pointType13Comm3RTSTestSeconds         :: !PointType13Comm3RTSTestSeconds
+,pointType13MngCFGNumDailyHistLogs      :: !PointType13MngCFGNumDailyHistLogs
+,pointType13MngHistTImeStampOpt         :: !PointType13MngHistTImeStampOpt
+,pointType13MngCFGNumDailyHitLogs       :: !PointType13MngCFGNumDailyHitLogs
 
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType13CRCCheck                  = Word8                
 type PointType13DiPi                      = Word8         

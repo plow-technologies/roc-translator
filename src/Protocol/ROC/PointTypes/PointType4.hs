@@ -1,16 +1,22 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType4 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Int
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8)
+import Data.Int           (Int16)
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           Get)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (anyButNull,getInt16)
 
 data PointType4 = PointType4 {
  pointType4PointTag                      :: !PointType4PointTag                       
@@ -27,10 +33,10 @@ data PointType4 = PointType4 {
 ,pointType4ManualEU                      :: !PointType4ManualEU                  
 ,pointType4PhysicalEU                    :: !PointType4PhysicalEU                
                       
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
-type PointType4PointTag                  = BS.ByteString    
-type PointType4Units                     = BS.ByteString            
+type PointType4PointTag                  = ByteString    
+type PointType4Units                     = ByteString            
 type PointType4AdjustedDA0               = Int16           
 type PointType4AdjustedDA100             = Int16               
 type PointType4LowReading                = Float             

@@ -1,14 +1,16 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude  #-}
 
 module Protocol.ROC.PointTypes.PointType59 where
 
-import GHC.Generics
-import Data.Int
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getWord8,getWord16le,getWord32le,Get)
+import Data.Int           (Int8)
+import Data.Word          (Word8,Word16,Word32)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (getInt8)
 
 data PointType59 = PointType59 {
  
@@ -26,7 +28,7 @@ data PointType59 = PointType59 {
 ,pointType59NotUsed1                        :: !PointType59NotUsed1                                 
 ,pointType59NotUsed2                        :: !PointType59NotUsed2                                                                            
 
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Read,Eq, Show)                       
 
 type PointType59OperationProgressFlag       =  Word8                                                                                     
 type PointType59StatusCode                  =  Int8                                                                          
