@@ -62,8 +62,8 @@ type PointType2PhysicalState         = Word8
 
 
 pointType2Parser :: Get PointType2
-pointType2Parser = do 
-  pointId <- getByteString 10 
+pointType2Parser = do
+  pointId <- getByteString 10
   timeon <- getWord16le
   spare <- getWord8
   sts <- anyButNull
@@ -71,7 +71,7 @@ pointType2Parser = do
   alarmCode <- getWord8
   accumulatedvalue <- getWord32le
   units <- getByteString 10
-  cycleTime <- getWord16le 
+  cycleTime <- getWord16le
   count0 <- getInt16
   count100 <- getInt16
   lowReading <- getIeeeFloat32
@@ -81,7 +81,7 @@ pointType2Parser = do
   scanningMode <- anyButNull
   manualState <- getWord8
   physicalState <- getWord8
-  
+
   return $ PointType2 pointId timeon spare sts cfg alarmCode accumulatedvalue units cycleTime count0 count100 lowReading highReading euValue alarmMode scanningMode manualState physicalState
 
 
