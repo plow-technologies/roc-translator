@@ -4,11 +4,16 @@ module Protocol.ROC.ROCConfig where
 import System.Hardware.Serialport
 import Data.Word
 import qualified Data.ByteString as BS
---import qualified Data.ByteString.Lazy as LB
+import qualified Data.ByteString.Lazy as LB
 import Protocol.ROC.PointTypes
+
+type StrictByteString = BS.ByteString
+type LazyByteString = LB.ByteString
+
 
 type BlockNumber  = Word8                                                 
 type RocAddress   = [Word8]
+
 
 data RocConfig = RocConfig {  rocConfigPort         :: FilePath
                              ,rocConfigRocAddress   :: RocAddress

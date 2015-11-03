@@ -1,113 +1,116 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude  #-}
 
 module Protocol.ROC.PointTypes.PointType118 where
 
-import GHC.Generics
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import qualified Data.ByteString as BS
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,getWord8,getWord16le,Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8,Word16)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (anyButNull,getTLP)
 
 
 data PointType118 = PointType118 {
   
- pointType118TagID                           :: !PointType118TagID                                    
-,pointType118StartRegister1                  :: !PointType118StartRegister1                                    
-,pointType118EndRegister1                    :: !PointType118EndRegister1                                    
-,pointType118ROCParametersRegRange1          :: !PointType118ROCParametersRegRange1                                    
-,pointType118IndexingRegRange1               :: !PointType118IndexingRegRange1                                    
-,pointType118ConversionCodeRegRange1         :: !PointType118ConversionCodeRegRange1                                    
-,pointType118CommPortRegRange1               :: !PointType118CommPortRegRange1                                    
-,pointType118StartRegister2                  :: !PointType118StartRegister2                                    
-,pointType118EndRegister2                    :: !PointType118EndRegister2                                    
-,pointType118ROCParametersRegRange2          :: !PointType118ROCParametersRegRange2                                    
-,pointType118IndexingRegRange2               :: !PointType118IndexingRegRange2                                    
-,pointType118ConversionCodeRegRange2         :: !PointType118ConversionCodeRegRange2                                    
-,pointType118CommPortRegRange2               :: !PointType118CommPortRegRange2                                    
-,pointType118StartRegister3                  :: !PointType118StartRegister3                                    
-,pointType118EndRegister3                    :: !PointType118EndRegister3                                    
-,pointType118ROCParametersRegRange3          :: !PointType118ROCParametersRegRange3                                    
-,pointType118IndexingRegRange3               :: !PointType118IndexingRegRange3                                    
-,pointType118ConversionCodeRegRange3         :: !PointType118ConversionCodeRegRange3                                    
-,pointType118CommPortRegRange3               :: !PointType118CommPortRegRange3                                    
-,pointType118StartRegister4                  :: !PointType118StartRegister4                                    
-,pointType118EndRegister4                    :: !PointType118EndRegister4                                    
-,pointType118ROCParametersRegRange4          :: !PointType118ROCParametersRegRange4                                    
-,pointType118IndexingRegRange4               :: !PointType118IndexingRegRange4                                    
-,pointType118ConversionCodeRegRange4         :: !PointType118ConversionCodeRegRange4                                    
-,pointType118CommPortRegRange4               :: !PointType118CommPortRegRange4                                    
-,pointType118StartRegister5                  :: !PointType118StartRegister5                                    
-,pointType118EndRegister5                    :: !PointType118EndRegister5                                    
-,pointType118ROCParametersRegRange5          :: !PointType118ROCParametersRegRange5                                    
-,pointType118IndexingRegRange5               :: !PointType118IndexingRegRange5                                    
-,pointType118ConversionCodeRegRange5         :: !PointType118ConversionCodeRegRange5                                    
-,pointType118CommPortRegRange5               :: !PointType118CommPortRegRange5                                    
-,pointType118StartRegister6                  :: !PointType118StartRegister6                                    
-,pointType118EndRegister6                    :: !PointType118EndRegister6                                    
-,pointType118ROCParametersRegRange6          :: !PointType118ROCParametersRegRange6                                    
-,pointType118IndexingRegRange6               :: !PointType118IndexingRegRange6                                    
-,pointType118ConversionCodeRegRange6         :: !PointType118ConversionCodeRegRange6                                    
-,pointType118CommPortRegRange6               :: !PointType118CommPortRegRange6                                    
-,pointType118StartRegister7                  :: !PointType118StartRegister7                                    
-,pointType118EndRegister7                    :: !PointType118EndRegister7                                    
-,pointType118ROCParametersRegRange7          :: !PointType118ROCParametersRegRange7                                    
-,pointType118IndexingRegRange7               :: !PointType118IndexingRegRange7                                    
-,pointType118ConversionCodeRegRange7         :: !PointType118ConversionCodeRegRange7                                    
-,pointType118CommPortRegRange7               :: !PointType118CommPortRegRange7                                    
-,pointType118StartRegister8                  :: !PointType118StartRegister8                                    
-,pointType118EndRegister8                    :: !PointType118EndRegister8                                    
-,pointType118ROCParametersRegRange8          :: !PointType118ROCParametersRegRange8                                    
-,pointType118IndexingRegRange8               :: !PointType118IndexingRegRange8                                    
-,pointType118ConversionCodeRegRange8         :: !PointType118ConversionCodeRegRange8                                    
-,pointType118CommPortRegRange8               :: !PointType118CommPortRegRange8                                    
-,pointType118StartRegister9                  :: !PointType118StartRegister9                                    
-,pointType118EndRegister9                    :: !PointType118EndRegister9                                    
-,pointType118ROCParametersRegRange9          :: !PointType118ROCParametersRegRange9                                    
-,pointType118IndexingRegRange9               :: !PointType118IndexingRegRange9                                    
-,pointType118ConversionCodeRegRange9         :: !PointType118ConversionCodeRegRange9                                    
-,pointType118CommPortRegRange9               :: !PointType118CommPortRegRange9                                    
-,pointType118StartRegister10                 :: !PointType118StartRegister10                                    
-,pointType118EndRegister10                   :: !PointType118EndRegister10                                    
-,pointType118ROCParametersRegRange10         :: !PointType118ROCParametersRegRange10                                    
-,pointType118IndexingRegRange10              :: !PointType118IndexingRegRange10                                    
-,pointType118ConversionCodeRegRange10        :: !PointType118ConversionCodeRegRange10                                    
-,pointType118CommPortRegRange10              :: !PointType118CommPortRegRange10                                    
-,pointType118StartRegister11                 :: !PointType118StartRegister11                                    
-,pointType118EndRegister11                   :: !PointType118EndRegister11                                    
-,pointType118ROCParametersRegRange11         :: !PointType118ROCParametersRegRange11                                    
-,pointType118IndexingRegRange11              :: !PointType118IndexingRegRange11                                    
-,pointType118ConversionCodeRegRange11        :: !PointType118ConversionCodeRegRange11                                    
-,pointType118CommPortRegRange11              :: !PointType118CommPortRegRange11                                    
-,pointType118StartRegister12                 :: !PointType118StartRegister12                                    
-,pointType118EndRegister12                   :: !PointType118EndRegister12                                    
-,pointType118ROCParametersRegRange12         :: !PointType118ROCParametersRegRange12                                    
-,pointType118IndexingRegRange12              :: !PointType118IndexingRegRange12                                    
-,pointType118ConversionCodeRegRange12        :: !PointType118ConversionCodeRegRange12                                    
-,pointType118CommPortRegRange12              :: !PointType118CommPortRegRange12                                    
-,pointType118StartRegister13                 :: !PointType118StartRegister13                                    
-,pointType118EndRegister13                   :: !PointType118EndRegister13                                    
-,pointType118ROCParametersRegRange13         :: !PointType118ROCParametersRegRange13                                    
-,pointType118IndexingRegRange13              :: !PointType118IndexingRegRange13                                    
-,pointType118ConversionCodeRegRange13        :: !PointType118ConversionCodeRegRange13                                    
-,pointType118CommPortRegRange13              :: !PointType118CommPortRegRange13                                    
-,pointType118StartRegister14                 :: !PointType118StartRegister14                                    
-,pointType118EndRegister14                   :: !PointType118EndRegister14                                    
-,pointType118ROCParametersRegRange14         :: !PointType118ROCParametersRegRange14                                    
-,pointType118IndexingRegRange14              :: !PointType118IndexingRegRange14                                    
-,pointType118ConversionCodeRegRange14        :: !PointType118ConversionCodeRegRange14                                    
-,pointType118CommPortRegRange14              :: !PointType118CommPortRegRange14                                    
-,pointType118StartRegister15                 :: !PointType118StartRegister15                                    
-,pointType118EndRegister15                   :: !PointType118EndRegister15                                    
-,pointType118ROCParametersRegRange15         :: !PointType118ROCParametersRegRange15                                    
-,pointType118IndexingRegRange15              :: !PointType118IndexingRegRange15                                    
-,pointType118ConversionCodeRegRange15        :: !PointType118ConversionCodeRegRange15                                    
-,pointType118CommPortRegRange15              :: !PointType118CommPortRegRange15                                    
+ pointType118TagID                           :: !PointType118TagID
+,pointType118StartRegister1                  :: !PointType118StartRegister1
+,pointType118EndRegister1                    :: !PointType118EndRegister1
+,pointType118ROCParametersRegRange1          :: !PointType118ROCParametersRegRange1
+,pointType118IndexingRegRange1               :: !PointType118IndexingRegRange1
+,pointType118ConversionCodeRegRange1         :: !PointType118ConversionCodeRegRange1
+,pointType118CommPortRegRange1               :: !PointType118CommPortRegRange1
+,pointType118StartRegister2                  :: !PointType118StartRegister2
+,pointType118EndRegister2                    :: !PointType118EndRegister2
+,pointType118ROCParametersRegRange2          :: !PointType118ROCParametersRegRange2
+,pointType118IndexingRegRange2               :: !PointType118IndexingRegRange2
+,pointType118ConversionCodeRegRange2         :: !PointType118ConversionCodeRegRange2
+,pointType118CommPortRegRange2               :: !PointType118CommPortRegRange2
+,pointType118StartRegister3                  :: !PointType118StartRegister3
+,pointType118EndRegister3                    :: !PointType118EndRegister3
+,pointType118ROCParametersRegRange3          :: !PointType118ROCParametersRegRange3
+,pointType118IndexingRegRange3               :: !PointType118IndexingRegRange3
+,pointType118ConversionCodeRegRange3         :: !PointType118ConversionCodeRegRange3
+,pointType118CommPortRegRange3               :: !PointType118CommPortRegRange3
+,pointType118StartRegister4                  :: !PointType118StartRegister4
+,pointType118EndRegister4                    :: !PointType118EndRegister4
+,pointType118ROCParametersRegRange4          :: !PointType118ROCParametersRegRange4
+,pointType118IndexingRegRange4               :: !PointType118IndexingRegRange4
+,pointType118ConversionCodeRegRange4         :: !PointType118ConversionCodeRegRange4
+,pointType118CommPortRegRange4               :: !PointType118CommPortRegRange4
+,pointType118StartRegister5                  :: !PointType118StartRegister5
+,pointType118EndRegister5                    :: !PointType118EndRegister5
+,pointType118ROCParametersRegRange5          :: !PointType118ROCParametersRegRange5
+,pointType118IndexingRegRange5               :: !PointType118IndexingRegRange5
+,pointType118ConversionCodeRegRange5         :: !PointType118ConversionCodeRegRange5
+,pointType118CommPortRegRange5               :: !PointType118CommPortRegRange5
+,pointType118StartRegister6                  :: !PointType118StartRegister6
+,pointType118EndRegister6                    :: !PointType118EndRegister6
+,pointType118ROCParametersRegRange6          :: !PointType118ROCParametersRegRange6
+,pointType118IndexingRegRange6               :: !PointType118IndexingRegRange6
+,pointType118ConversionCodeRegRange6         :: !PointType118ConversionCodeRegRange6
+,pointType118CommPortRegRange6               :: !PointType118CommPortRegRange6
+,pointType118StartRegister7                  :: !PointType118StartRegister7
+,pointType118EndRegister7                    :: !PointType118EndRegister7
+,pointType118ROCParametersRegRange7          :: !PointType118ROCParametersRegRange7
+,pointType118IndexingRegRange7               :: !PointType118IndexingRegRange7
+,pointType118ConversionCodeRegRange7         :: !PointType118ConversionCodeRegRange7
+,pointType118CommPortRegRange7               :: !PointType118CommPortRegRange7
+,pointType118StartRegister8                  :: !PointType118StartRegister8
+,pointType118EndRegister8                    :: !PointType118EndRegister8
+,pointType118ROCParametersRegRange8          :: !PointType118ROCParametersRegRange8
+,pointType118IndexingRegRange8               :: !PointType118IndexingRegRange8
+,pointType118ConversionCodeRegRange8         :: !PointType118ConversionCodeRegRange8
+,pointType118CommPortRegRange8               :: !PointType118CommPortRegRange8
+,pointType118StartRegister9                  :: !PointType118StartRegister9
+,pointType118EndRegister9                    :: !PointType118EndRegister9
+,pointType118ROCParametersRegRange9          :: !PointType118ROCParametersRegRange9
+,pointType118IndexingRegRange9               :: !PointType118IndexingRegRange9
+,pointType118ConversionCodeRegRange9         :: !PointType118ConversionCodeRegRange9
+,pointType118CommPortRegRange9               :: !PointType118CommPortRegRange9
+,pointType118StartRegister10                 :: !PointType118StartRegister10
+,pointType118EndRegister10                   :: !PointType118EndRegister10
+,pointType118ROCParametersRegRange10         :: !PointType118ROCParametersRegRange10
+,pointType118IndexingRegRange10              :: !PointType118IndexingRegRange10
+,pointType118ConversionCodeRegRange10        :: !PointType118ConversionCodeRegRange10
+,pointType118CommPortRegRange10              :: !PointType118CommPortRegRange10
+,pointType118StartRegister11                 :: !PointType118StartRegister11
+,pointType118EndRegister11                   :: !PointType118EndRegister11
+,pointType118ROCParametersRegRange11         :: !PointType118ROCParametersRegRange11
+,pointType118IndexingRegRange11              :: !PointType118IndexingRegRange11
+,pointType118ConversionCodeRegRange11        :: !PointType118ConversionCodeRegRange11
+,pointType118CommPortRegRange11              :: !PointType118CommPortRegRange11
+,pointType118StartRegister12                 :: !PointType118StartRegister12
+,pointType118EndRegister12                   :: !PointType118EndRegister12
+,pointType118ROCParametersRegRange12         :: !PointType118ROCParametersRegRange12
+,pointType118IndexingRegRange12              :: !PointType118IndexingRegRange12
+,pointType118ConversionCodeRegRange12        :: !PointType118ConversionCodeRegRange12
+,pointType118CommPortRegRange12              :: !PointType118CommPortRegRange12
+,pointType118StartRegister13                 :: !PointType118StartRegister13
+,pointType118EndRegister13                   :: !PointType118EndRegister13
+,pointType118ROCParametersRegRange13         :: !PointType118ROCParametersRegRange13
+,pointType118IndexingRegRange13              :: !PointType118IndexingRegRange13
+,pointType118ConversionCodeRegRange13        :: !PointType118ConversionCodeRegRange13
+,pointType118CommPortRegRange13              :: !PointType118CommPortRegRange13
+,pointType118StartRegister14                 :: !PointType118StartRegister14
+,pointType118EndRegister14                   :: !PointType118EndRegister14
+,pointType118ROCParametersRegRange14         :: !PointType118ROCParametersRegRange14
+,pointType118IndexingRegRange14              :: !PointType118IndexingRegRange14
+,pointType118ConversionCodeRegRange14        :: !PointType118ConversionCodeRegRange14
+,pointType118CommPortRegRange14              :: !PointType118CommPortRegRange14
+,pointType118StartRegister15                 :: !PointType118StartRegister15
+,pointType118EndRegister15                   :: !PointType118EndRegister15
+,pointType118ROCParametersRegRange15         :: !PointType118ROCParametersRegRange15
+,pointType118IndexingRegRange15              :: !PointType118IndexingRegRange15
+,pointType118ConversionCodeRegRange15        :: !PointType118ConversionCodeRegRange15
+,pointType118CommPortRegRange15              :: !PointType118CommPortRegRange15
   
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Eq,Read,Show)
                                   
-type PointType118TagID                       = BS.ByteString                              
+type PointType118TagID                       = ByteString                              
 type PointType118StartRegister1              = Word16                              
 type PointType118EndRegister1                = Word16                              
 type PointType118ROCParametersRegRange1      = [Word8]                              

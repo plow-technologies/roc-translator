@@ -1,13 +1,15 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType120 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
+import Data.Binary.Get (getByteString,getWord8,Get)
+import Data.ByteString (ByteString)
+import Data.Word       (Word8)
+import Prelude         (($),
+                        return,
+                        Eq,
+                        Read,
+                        Show)
 
 data PointType120 = PointType120 {
  
@@ -25,21 +27,21 @@ data PointType120 = PointType120 {
 ,pointType120SixthAddress                :: !PointType120SixthAddress                       
 ,pointType120SixthConnectCommand         :: !PointType120SixthConnectCommand                       
 
-} deriving (Eq, Show, Generic)                       
+} deriving (Eq,Read,Show)                       
 
-type PointType120TagID                   = BS.ByteString                       
+type PointType120TagID                   = ByteString                       
 type PointType120FirstAddress            = Word8                       
-type PointType120FirstConnectCommand     = BS.ByteString                       
+type PointType120FirstConnectCommand     = ByteString                       
 type PointType120SecondAddress           = Word8                       
-type PointType120SecondConnectCommand    = BS.ByteString                       
+type PointType120SecondConnectCommand    = ByteString                       
 type PointType120ThirdAddress            = Word8                       
-type PointType120ThirdConnectCommand     = BS.ByteString                       
+type PointType120ThirdConnectCommand     = ByteString                       
 type PointType120FourthAddress           = Word8                       
-type PointType120FourthConnectCommand    = BS.ByteString                       
+type PointType120FourthConnectCommand    = ByteString                       
 type PointType120FifthAddress            = Word8                       
-type PointType120FifthConnectCommand     = BS.ByteString                       
+type PointType120FifthConnectCommand     = ByteString                       
 type PointType120SixthAddress            = Word8                       
-type PointType120SixthConnectCommand     = BS.ByteString                         
+type PointType120SixthConnectCommand     = ByteString                         
   
 pointType120Parser :: Get PointType120
 pointType120Parser = do 

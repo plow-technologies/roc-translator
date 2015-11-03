@@ -1,25 +1,29 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType172 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord32le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8,Word32)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Read,
+                           Show)
 
 data PointType172 = PointType172 {
  
- pointType172RemoteRTUTag                 :: !PointType172RemoteRTUTag                      
-,pointType172ROCDeviceID                  :: !PointType172ROCDeviceID                      
-,pointType172ComissionListIndex           :: !PointType172ComissionListIndex                      
-,pointType172ComissionFlag                :: !PointType172ComissionFlag                      
+ pointType172RemoteRTUTag                 :: !PointType172RemoteRTUTag
+,pointType172ROCDeviceID                  :: !PointType172ROCDeviceID
+,pointType172ComissionListIndex           :: !PointType172ComissionListIndex
+,pointType172ComissionFlag                :: !PointType172ComissionFlag
 
-} deriving (Eq, Show, Generic)                       
+} deriving (Eq,Read,Show)
 
-type PointType172RemoteRTUTag             = BS.ByteString            
+type PointType172RemoteRTUTag             = ByteString            
 type PointType172ROCDeviceID              = Word32            
 type PointType172ComissionListIndex       = Word8            
 type PointType172ComissionFlag            = Word8            

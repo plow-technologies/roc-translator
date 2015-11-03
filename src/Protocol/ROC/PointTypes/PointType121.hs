@@ -1,175 +1,178 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude  #-}
 
 module Protocol.ROC.PointTypes.PointType121 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
+import Data.Binary.Get (getByteString,
+                        getWord8,
+                        getWord16le,
+                        Get)
+import Data.ByteString (ByteString)
+import Data.Word       (Word8,Word16)
+import Prelude         (($),
+                        return,
+                        Eq,
+                        Read,
+                        Show)
 
 data PointType121 = PointType121 {
   
- pointType121TagID                      :: !PointType121TagID                      
-,pointType121SlaveAddress1              :: !PointType121SlaveAddress1                      
-,pointType121FunctionCode1              :: !PointType121FunctionCode1                      
-,pointType121SlaveRegister1             :: !PointType121SlaveRegister1                      
-,pointType121MasterRegister1            :: !PointType121MasterRegister1                      
-,pointType121NumOfRegisters1            :: !PointType121NumOfRegisters1                      
-,pointType121CommStatus1                :: !PointType121CommStatus1                      
-,pointType121SlaveAddress2              :: !PointType121SlaveAddress2                  
-,pointType121FunctionCode2              :: !PointType121FunctionCode2                  
-,pointType121SlaveRegister2             :: !PointType121SlaveRegister2                  
-,pointType121MasterRegister2            :: !PointType121MasterRegister2                  
-,pointType121NumOfRegisters2            :: !PointType121NumOfRegisters2                  
-,pointType121CommStatus2                :: !PointType121CommStatus2                  
-,pointType121SlaveAddress3              :: !PointType121SlaveAddress3                      
-,pointType121FunctionCode3              :: !PointType121FunctionCode3                      
-,pointType121SlaveRegister3             :: !PointType121SlaveRegister3                      
-,pointType121MasterRegister3            :: !PointType121MasterRegister3                      
-,pointType121NumOfRegisters3            :: !PointType121NumOfRegisters3                      
-,pointType121CommStatus3                :: !PointType121CommStatus3                      
-,pointType121SlaveAddress4              :: !PointType121SlaveAddress4                      
-,pointType121FunctionCode4              :: !PointType121FunctionCode4                      
-,pointType121SlaveRegister4             :: !PointType121SlaveRegister4                      
-,pointType121MasterRegister4            :: !PointType121MasterRegister4                      
-,pointType121NumOfRegisters4            :: !PointType121NumOfRegisters4                      
-,pointType121CommStatus4                :: !PointType121CommStatus4                      
-,pointType121SlaveAddress5              :: !PointType121SlaveAddress5                      
-,pointType121FunctionCode5              :: !PointType121FunctionCode5                      
-,pointType121SlaveRegister5             :: !PointType121SlaveRegister5                      
-,pointType121MasterRegister5            :: !PointType121MasterRegister5                      
-,pointType121NumOfRegisters5            :: !PointType121NumOfRegisters5                      
-,pointType121CommStatus5                :: !PointType121CommStatus5                      
-,pointType121SlaveAddress6              :: !PointType121SlaveAddress6                      
-,pointType121FunctionCode6              :: !PointType121FunctionCode6                      
-,pointType121SlaveRegister6             :: !PointType121SlaveRegister6                      
-,pointType121MasterRegister6            :: !PointType121MasterRegister6                      
-,pointType121NumOfRegisters6            :: !PointType121NumOfRegisters6                      
-,pointType121CommStatus6                :: !PointType121CommStatus6                      
-,pointType121SlaveAddress7              :: !PointType121SlaveAddress7                      
-,pointType121FunctionCode7              :: !PointType121FunctionCode7                      
-,pointType121SlaveRegister7             :: !PointType121SlaveRegister7                      
-,pointType121MasterRegister7            :: !PointType121MasterRegister7                      
-,pointType121NumOfRegisters7            :: !PointType121NumOfRegisters7                      
-,pointType121CommStatus7                :: !PointType121CommStatus7                      
-,pointType121SlaveAddress8              :: !PointType121SlaveAddress8                      
-,pointType121FunctionCode8              :: !PointType121FunctionCode8                      
-,pointType121SlaveRegister8             :: !PointType121SlaveRegister8                      
-,pointType121MasterRegister8            :: !PointType121MasterRegister8                      
-,pointType121NumOfRegisters8            :: !PointType121NumOfRegisters8                      
-,pointType121CommStatus8                :: !PointType121CommStatus8                      
-,pointType121SlaveAddress9              :: !PointType121SlaveAddress9                      
-,pointType121FunctionCode9              :: !PointType121FunctionCode9                      
-,pointType121SlaveRegister9             :: !PointType121SlaveRegister9                      
-,pointType121MasterRegister9            :: !PointType121MasterRegister9                      
-,pointType121NumOfRegisters9            :: !PointType121NumOfRegisters9                      
-,pointType121CommStatus9                :: !PointType121CommStatus9                      
-,pointType121SlaveAddress10             :: !PointType121SlaveAddress10                      
-,pointType121FunctionCode10             :: !PointType121FunctionCode10                      
-,pointType121SlaveRegister10            :: !PointType121SlaveRegister10                      
-,pointType121MasterRegister10           :: !PointType121MasterRegister10                      
-,pointType121NumOfRegisters10           :: !PointType121NumOfRegisters10                      
-,pointType121CommStatus10               :: !PointType121CommStatus10                      
-,pointType121SlaveAddress11             :: !PointType121SlaveAddress11                      
-,pointType121FunctionCode11             :: !PointType121FunctionCode11                      
-,pointType121SlaveRegister11            :: !PointType121SlaveRegister11                      
-,pointType121MasterRegister11           :: !PointType121MasterRegister11                      
-,pointType121NumOfRegisters11           :: !PointType121NumOfRegisters11                      
-,pointType121CommStatus11               :: !PointType121CommStatus11                      
-,pointType121SlaveAddress12             :: !PointType121SlaveAddress12                      
-,pointType121FunctionCode12             :: !PointType121FunctionCode12                      
-,pointType121SlaveRegister12            :: !PointType121SlaveRegister12                      
-,pointType121MasterRegister12           :: !PointType121MasterRegister12                      
-,pointType121NumOfRegisters12           :: !PointType121NumOfRegisters12                      
-,pointType121CommStatus12               :: !PointType121CommStatus12                      
-,pointType121SlaveAddress13             :: !PointType121SlaveAddress13                      
-,pointType121FunctionCode13             :: !PointType121FunctionCode13                      
-,pointType121SlaveRegister13            :: !PointType121SlaveRegister13                      
-,pointType121MasterRegister13           :: !PointType121MasterRegister13                      
-,pointType121NumOfRegisters13           :: !PointType121NumOfRegisters13                      
-,pointType121CommStatus13               :: !PointType121CommStatus13                      
-,pointType121SlaveAddress14             :: !PointType121SlaveAddress14                      
-,pointType121FunctionCode14             :: !PointType121FunctionCode14                      
-,pointType121SlaveRegister14            :: !PointType121SlaveRegister14                      
-,pointType121MasterRegister14           :: !PointType121MasterRegister14                      
-,pointType121NumOfRegisters14           :: !PointType121NumOfRegisters14                      
-,pointType121CommStatus14               :: !PointType121CommStatus14                      
-,pointType121SlaveAddress15             :: !PointType121SlaveAddress15                      
-,pointType121FunctionCode15             :: !PointType121FunctionCode15                      
-,pointType121SlaveRegister15            :: !PointType121SlaveRegister15                      
-,pointType121MasterRegister15           :: !PointType121MasterRegister15                      
-,pointType121NumOfRegisters15           :: !PointType121NumOfRegisters15                      
-,pointType121CommStatus15               :: !PointType121CommStatus15                      
-,pointType121SlaveAddress16             :: !PointType121SlaveAddress16                      
-,pointType121FunctionCode16             :: !PointType121FunctionCode16                      
-,pointType121SlaveRegister16            :: !PointType121SlaveRegister16                      
-,pointType121MasterRegister16           :: !PointType121MasterRegister16                      
-,pointType121NumOfRegisters16           :: !PointType121NumOfRegisters16                      
-,pointType121CommStatus16               :: !PointType121CommStatus16                      
-,pointType121SlaveAddress17             :: !PointType121SlaveAddress17                      
-,pointType121FunctionCode17             :: !PointType121FunctionCode17                      
-,pointType121SlaveRegister17            :: !PointType121SlaveRegister17                      
-,pointType121MasterRegister17           :: !PointType121MasterRegister17                      
-,pointType121NumOfRegisters17           :: !PointType121NumOfRegisters17                      
-,pointType121CommStatus17               :: !PointType121CommStatus17                      
-,pointType121SlaveAddress18             :: !PointType121SlaveAddress18                      
-,pointType121FunctionCode18             :: !PointType121FunctionCode18                      
-,pointType121SlaveRegister18            :: !PointType121SlaveRegister18                      
-,pointType121MasterRegister18           :: !PointType121MasterRegister18                      
-,pointType121NumOfRegisters18           :: !PointType121NumOfRegisters18                      
-,pointType121CommStatus18               :: !PointType121CommStatus18                      
-,pointType121SlaveAddress19             :: !PointType121SlaveAddress19                      
-,pointType121FunctionCode19             :: !PointType121FunctionCode19                      
-,pointType121SlaveRegister19            :: !PointType121SlaveRegister19                      
-,pointType121MasterRegister19           :: !PointType121MasterRegister19                      
-,pointType121NumOfRegisters19           :: !PointType121NumOfRegisters19                      
-,pointType121CommStatus19               :: !PointType121CommStatus19                      
-,pointType121SlaveAddress20             :: !PointType121SlaveAddress20                      
-,pointType121FunctionCode20             :: !PointType121FunctionCode20                      
-,pointType121SlaveRegister20            :: !PointType121SlaveRegister20                      
-,pointType121MasterRegister20           :: !PointType121MasterRegister20                      
-,pointType121NumOfRegisters20           :: !PointType121NumOfRegisters20                      
-,pointType121CommStatus20               :: !PointType121CommStatus20                      
-,pointType121SlaveAddress21             :: !PointType121SlaveAddress21                      
-,pointType121FunctionCode21             :: !PointType121FunctionCode21                      
-,pointType121SlaveRegister21            :: !PointType121SlaveRegister21                      
-,pointType121MasterRegister21           :: !PointType121MasterRegister21                      
-,pointType121NumOfRegisters21           :: !PointType121NumOfRegisters21                      
-,pointType121CommStatus21               :: !PointType121CommStatus21                      
-,pointType121SlaveAddress22             :: !PointType121SlaveAddress22                      
-,pointType121FunctionCode22             :: !PointType121FunctionCode22                      
-,pointType121SlaveRegister22            :: !PointType121SlaveRegister22                      
-,pointType121MasterRegister22           :: !PointType121MasterRegister22                      
-,pointType121NumOfRegisters22           :: !PointType121NumOfRegisters22                      
-,pointType121CommStatus22               :: !PointType121CommStatus22                      
-,pointType121SlaveAddress23             :: !PointType121SlaveAddress23                      
-,pointType121FunctionCode23             :: !PointType121FunctionCode23                      
-,pointType121SlaveRegister23            :: !PointType121SlaveRegister23                      
-,pointType121MasterRegister23           :: !PointType121MasterRegister23                      
-,pointType121NumOfRegisters23           :: !PointType121NumOfRegisters23                      
-,pointType121CommStatus23               :: !PointType121CommStatus23                      
-,pointType121SlaveAddress24             :: !PointType121SlaveAddress24                      
-,pointType121FunctionCode24             :: !PointType121FunctionCode24                      
-,pointType121SlaveRegister24            :: !PointType121SlaveRegister24                      
-,pointType121MasterRegister24           :: !PointType121MasterRegister24                      
-,pointType121NumOfRegisters24           :: !PointType121NumOfRegisters24                      
-,pointType121CommStatus24               :: !PointType121CommStatus24                      
-,pointType121SlaveAddress25             :: !PointType121SlaveAddress25                      
-,pointType121FunctionCode25             :: !PointType121FunctionCode25                      
-,pointType121SlaveRegister25            :: !PointType121SlaveRegister25                      
-,pointType121MasterRegister25           :: !PointType121MasterRegister25                      
-,pointType121NumOfRegisters25           :: !PointType121NumOfRegisters25                      
-,pointType121CommStatus25               :: !PointType121CommStatus25                      
+ pointType121TagID                      :: !PointType121TagID
+,pointType121SlaveAddress1              :: !PointType121SlaveAddress1
+,pointType121FunctionCode1              :: !PointType121FunctionCode1
+,pointType121SlaveRegister1             :: !PointType121SlaveRegister1
+,pointType121MasterRegister1            :: !PointType121MasterRegister1
+,pointType121NumOfRegisters1            :: !PointType121NumOfRegisters1
+,pointType121CommStatus1                :: !PointType121CommStatus1
+,pointType121SlaveAddress2              :: !PointType121SlaveAddress2
+,pointType121FunctionCode2              :: !PointType121FunctionCode2
+,pointType121SlaveRegister2             :: !PointType121SlaveRegister2
+,pointType121MasterRegister2            :: !PointType121MasterRegister2
+,pointType121NumOfRegisters2            :: !PointType121NumOfRegisters2
+,pointType121CommStatus2                :: !PointType121CommStatus2
+,pointType121SlaveAddress3              :: !PointType121SlaveAddress3
+,pointType121FunctionCode3              :: !PointType121FunctionCode3
+,pointType121SlaveRegister3             :: !PointType121SlaveRegister3
+,pointType121MasterRegister3            :: !PointType121MasterRegister3
+,pointType121NumOfRegisters3            :: !PointType121NumOfRegisters3
+,pointType121CommStatus3                :: !PointType121CommStatus3
+,pointType121SlaveAddress4              :: !PointType121SlaveAddress4
+,pointType121FunctionCode4              :: !PointType121FunctionCode4
+,pointType121SlaveRegister4             :: !PointType121SlaveRegister4
+,pointType121MasterRegister4            :: !PointType121MasterRegister4
+,pointType121NumOfRegisters4            :: !PointType121NumOfRegisters4
+,pointType121CommStatus4                :: !PointType121CommStatus4
+,pointType121SlaveAddress5              :: !PointType121SlaveAddress5
+,pointType121FunctionCode5              :: !PointType121FunctionCode5
+,pointType121SlaveRegister5             :: !PointType121SlaveRegister5
+,pointType121MasterRegister5            :: !PointType121MasterRegister5
+,pointType121NumOfRegisters5            :: !PointType121NumOfRegisters5
+,pointType121CommStatus5                :: !PointType121CommStatus5
+,pointType121SlaveAddress6              :: !PointType121SlaveAddress6
+,pointType121FunctionCode6              :: !PointType121FunctionCode6
+,pointType121SlaveRegister6             :: !PointType121SlaveRegister6
+,pointType121MasterRegister6            :: !PointType121MasterRegister6
+,pointType121NumOfRegisters6            :: !PointType121NumOfRegisters6
+,pointType121CommStatus6                :: !PointType121CommStatus6
+,pointType121SlaveAddress7              :: !PointType121SlaveAddress7
+,pointType121FunctionCode7              :: !PointType121FunctionCode7
+,pointType121SlaveRegister7             :: !PointType121SlaveRegister7
+,pointType121MasterRegister7            :: !PointType121MasterRegister7
+,pointType121NumOfRegisters7            :: !PointType121NumOfRegisters7
+,pointType121CommStatus7                :: !PointType121CommStatus7
+,pointType121SlaveAddress8              :: !PointType121SlaveAddress8
+,pointType121FunctionCode8              :: !PointType121FunctionCode8
+,pointType121SlaveRegister8             :: !PointType121SlaveRegister8
+,pointType121MasterRegister8            :: !PointType121MasterRegister8
+,pointType121NumOfRegisters8            :: !PointType121NumOfRegisters8
+,pointType121CommStatus8                :: !PointType121CommStatus8
+,pointType121SlaveAddress9              :: !PointType121SlaveAddress9
+,pointType121FunctionCode9              :: !PointType121FunctionCode9
+,pointType121SlaveRegister9             :: !PointType121SlaveRegister9
+,pointType121MasterRegister9            :: !PointType121MasterRegister9
+,pointType121NumOfRegisters9            :: !PointType121NumOfRegisters9
+,pointType121CommStatus9                :: !PointType121CommStatus9
+,pointType121SlaveAddress10             :: !PointType121SlaveAddress10
+,pointType121FunctionCode10             :: !PointType121FunctionCode10
+,pointType121SlaveRegister10            :: !PointType121SlaveRegister10
+,pointType121MasterRegister10           :: !PointType121MasterRegister10
+,pointType121NumOfRegisters10           :: !PointType121NumOfRegisters10
+,pointType121CommStatus10               :: !PointType121CommStatus10
+,pointType121SlaveAddress11             :: !PointType121SlaveAddress11
+,pointType121FunctionCode11             :: !PointType121FunctionCode11
+,pointType121SlaveRegister11            :: !PointType121SlaveRegister11
+,pointType121MasterRegister11           :: !PointType121MasterRegister11
+,pointType121NumOfRegisters11           :: !PointType121NumOfRegisters11
+,pointType121CommStatus11               :: !PointType121CommStatus11
+,pointType121SlaveAddress12             :: !PointType121SlaveAddress12
+,pointType121FunctionCode12             :: !PointType121FunctionCode12
+,pointType121SlaveRegister12            :: !PointType121SlaveRegister12
+,pointType121MasterRegister12           :: !PointType121MasterRegister12
+,pointType121NumOfRegisters12           :: !PointType121NumOfRegisters12
+,pointType121CommStatus12               :: !PointType121CommStatus12
+,pointType121SlaveAddress13             :: !PointType121SlaveAddress13
+,pointType121FunctionCode13             :: !PointType121FunctionCode13
+,pointType121SlaveRegister13            :: !PointType121SlaveRegister13
+,pointType121MasterRegister13           :: !PointType121MasterRegister13
+,pointType121NumOfRegisters13           :: !PointType121NumOfRegisters13
+,pointType121CommStatus13               :: !PointType121CommStatus13
+,pointType121SlaveAddress14             :: !PointType121SlaveAddress14
+,pointType121FunctionCode14             :: !PointType121FunctionCode14
+,pointType121SlaveRegister14            :: !PointType121SlaveRegister14
+,pointType121MasterRegister14           :: !PointType121MasterRegister14
+,pointType121NumOfRegisters14           :: !PointType121NumOfRegisters14
+,pointType121CommStatus14               :: !PointType121CommStatus14
+,pointType121SlaveAddress15             :: !PointType121SlaveAddress15
+,pointType121FunctionCode15             :: !PointType121FunctionCode15
+,pointType121SlaveRegister15            :: !PointType121SlaveRegister15
+,pointType121MasterRegister15           :: !PointType121MasterRegister15
+,pointType121NumOfRegisters15           :: !PointType121NumOfRegisters15
+,pointType121CommStatus15               :: !PointType121CommStatus15
+,pointType121SlaveAddress16             :: !PointType121SlaveAddress16
+,pointType121FunctionCode16             :: !PointType121FunctionCode16
+,pointType121SlaveRegister16            :: !PointType121SlaveRegister16
+,pointType121MasterRegister16           :: !PointType121MasterRegister16
+,pointType121NumOfRegisters16           :: !PointType121NumOfRegisters16
+,pointType121CommStatus16               :: !PointType121CommStatus16
+,pointType121SlaveAddress17             :: !PointType121SlaveAddress17
+,pointType121FunctionCode17             :: !PointType121FunctionCode17
+,pointType121SlaveRegister17            :: !PointType121SlaveRegister17
+,pointType121MasterRegister17           :: !PointType121MasterRegister17
+,pointType121NumOfRegisters17           :: !PointType121NumOfRegisters17
+,pointType121CommStatus17               :: !PointType121CommStatus17
+,pointType121SlaveAddress18             :: !PointType121SlaveAddress18
+,pointType121FunctionCode18             :: !PointType121FunctionCode18
+,pointType121SlaveRegister18            :: !PointType121SlaveRegister18
+,pointType121MasterRegister18           :: !PointType121MasterRegister18
+,pointType121NumOfRegisters18           :: !PointType121NumOfRegisters18
+,pointType121CommStatus18               :: !PointType121CommStatus18
+,pointType121SlaveAddress19             :: !PointType121SlaveAddress19
+,pointType121FunctionCode19             :: !PointType121FunctionCode19
+,pointType121SlaveRegister19            :: !PointType121SlaveRegister19
+,pointType121MasterRegister19           :: !PointType121MasterRegister19
+,pointType121NumOfRegisters19           :: !PointType121NumOfRegisters19
+,pointType121CommStatus19               :: !PointType121CommStatus19
+,pointType121SlaveAddress20             :: !PointType121SlaveAddress20
+,pointType121FunctionCode20             :: !PointType121FunctionCode20
+,pointType121SlaveRegister20            :: !PointType121SlaveRegister20
+,pointType121MasterRegister20           :: !PointType121MasterRegister20
+,pointType121NumOfRegisters20           :: !PointType121NumOfRegisters20
+,pointType121CommStatus20               :: !PointType121CommStatus20
+,pointType121SlaveAddress21             :: !PointType121SlaveAddress21
+,pointType121FunctionCode21             :: !PointType121FunctionCode21
+,pointType121SlaveRegister21            :: !PointType121SlaveRegister21
+,pointType121MasterRegister21           :: !PointType121MasterRegister21
+,pointType121NumOfRegisters21           :: !PointType121NumOfRegisters21
+,pointType121CommStatus21               :: !PointType121CommStatus21
+,pointType121SlaveAddress22             :: !PointType121SlaveAddress22
+,pointType121FunctionCode22             :: !PointType121FunctionCode22
+,pointType121SlaveRegister22            :: !PointType121SlaveRegister22
+,pointType121MasterRegister22           :: !PointType121MasterRegister22
+,pointType121NumOfRegisters22           :: !PointType121NumOfRegisters22
+,pointType121CommStatus22               :: !PointType121CommStatus22
+,pointType121SlaveAddress23             :: !PointType121SlaveAddress23
+,pointType121FunctionCode23             :: !PointType121FunctionCode23
+,pointType121SlaveRegister23            :: !PointType121SlaveRegister23
+,pointType121MasterRegister23           :: !PointType121MasterRegister23
+,pointType121NumOfRegisters23           :: !PointType121NumOfRegisters23
+,pointType121CommStatus23               :: !PointType121CommStatus23
+,pointType121SlaveAddress24             :: !PointType121SlaveAddress24
+,pointType121FunctionCode24             :: !PointType121FunctionCode24
+,pointType121SlaveRegister24            :: !PointType121SlaveRegister24
+,pointType121MasterRegister24           :: !PointType121MasterRegister24
+,pointType121NumOfRegisters24           :: !PointType121NumOfRegisters24
+,pointType121CommStatus24               :: !PointType121CommStatus24
+,pointType121SlaveAddress25             :: !PointType121SlaveAddress25
+,pointType121FunctionCode25             :: !PointType121FunctionCode25
+,pointType121SlaveRegister25            :: !PointType121SlaveRegister25
+,pointType121MasterRegister25           :: !PointType121MasterRegister25
+,pointType121NumOfRegisters25           :: !PointType121NumOfRegisters25
+,pointType121CommStatus25               :: !PointType121CommStatus25
 
   
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Eq,Read,Show)                       
                                   
 
-
-
-type PointType121TagID              = BS.ByteString       
+type PointType121TagID              = ByteString       
 type PointType121SlaveAddress1      = Word8       
 type PointType121FunctionCode1      = Word8       
 type PointType121SlaveRegister1     = Word16       

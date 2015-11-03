@@ -1,51 +1,57 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType122 where
 
-import GHC.Generics
-import Data.Int
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
-import qualified Data.ByteString as BS
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord32le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Int           (Int8)
+import Data.Word          (Word8,Word32)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (anyButNull,getInt8)
 
 
 data PointType122 = PointType122 {
   
- pointType122PowerSwitch                         :: !PointType122PowerSwitch                          
-,pointType122RSIEnable                           :: !PointType122RSIEnable                          
-,pointType122ETCPEnable                          :: !PointType122ETCPEnable                          
-,pointType122IXDEnable                           :: !PointType122IXDEnable                          
-,pointType122RSIRunning                          :: !PointType122RSIRunning                          
-,pointType122ETCPRunning                         :: !PointType122ETCPRunning                          
-,pointType122IXDRunning                          :: !PointType122IXDRunning                          
-,pointType122CleanStoredResources                :: !PointType122CleanStoredResources                          
-,pointType122Resource1Name                       :: !PointType122Resource1Name                          
-,pointType122Resource1Status                     :: !PointType122Resource1Status                          
-,pointType122Resource1ProgrammedCycleTime        :: !PointType122Resource1ProgrammedCycleTime                          
-,pointType122Resource1CurrentCycleTime           :: !PointType122Resource1CurrentCycleTime                          
-,pointType122Resource2Name                       :: !PointType122Resource2Name                          
-,pointType122Resource2Status                     :: !PointType122Resource2Status                          
-,pointType122Resource2ProgrammedCycleTime        :: !PointType122Resource2ProgrammedCycleTime                         
-,pointType122Resource2CurrentCycleTime           :: !PointType122Resource2CurrentCycleTime                          
-,pointType122Resource3Name                       :: !PointType122Resource3Name                          
-,pointType122Resource3Status                     :: !PointType122Resource3Status                          
-,pointType122Resource3ProgrammedCycleTime        :: !PointType122Resource3ProgrammedCycleTime                          
-,pointType122Resource3CurrentCycleTime           :: !PointType122Resource3CurrentCycleTime                          
-,pointType122Resource4Name                       :: !PointType122Resource4Name                          
-,pointType122Resource4Status                     :: !PointType122Resource4Status                          
-,pointType122Resource4ProgrammedCycleTime        :: !PointType122Resource4ProgrammedCycleTime                          
-,pointType122Resource4CurrentCycleTime           :: !PointType122Resource4CurrentCycleTime                          
-,pointType122KernelStatus                        :: !PointType122KernelStatus                          
-,pointType122ClearKernelCommand                  :: !PointType122ClearKernelCommand                          
-,pointType122UserCProgramProgramIdentifier       :: !PointType122UserCProgramProgramIdentifier                          
-,pointType122UserCProgramVersionString           :: !PointType122UserCProgramVersionString                          
-,pointType122ProgramTimeDateStamp                :: !PointType122ProgramTimeDateStamp                          
+ pointType122PowerSwitch                         :: !PointType122PowerSwitch
+,pointType122RSIEnable                           :: !PointType122RSIEnable
+,pointType122ETCPEnable                          :: !PointType122ETCPEnable
+,pointType122IXDEnable                           :: !PointType122IXDEnable
+,pointType122RSIRunning                          :: !PointType122RSIRunning
+,pointType122ETCPRunning                         :: !PointType122ETCPRunning
+,pointType122IXDRunning                          :: !PointType122IXDRunning
+,pointType122CleanStoredResources                :: !PointType122CleanStoredResources
+,pointType122Resource1Name                       :: !PointType122Resource1Name
+,pointType122Resource1Status                     :: !PointType122Resource1Status
+,pointType122Resource1ProgrammedCycleTime        :: !PointType122Resource1ProgrammedCycleTime
+,pointType122Resource1CurrentCycleTime           :: !PointType122Resource1CurrentCycleTime
+,pointType122Resource2Name                       :: !PointType122Resource2Name
+,pointType122Resource2Status                     :: !PointType122Resource2Status
+,pointType122Resource2ProgrammedCycleTime        :: !PointType122Resource2ProgrammedCycleTime
+,pointType122Resource2CurrentCycleTime           :: !PointType122Resource2CurrentCycleTime
+,pointType122Resource3Name                       :: !PointType122Resource3Name
+,pointType122Resource3Status                     :: !PointType122Resource3Status
+,pointType122Resource3ProgrammedCycleTime        :: !PointType122Resource3ProgrammedCycleTime
+,pointType122Resource3CurrentCycleTime           :: !PointType122Resource3CurrentCycleTime
+,pointType122Resource4Name                       :: !PointType122Resource4Name
+,pointType122Resource4Status                     :: !PointType122Resource4Status
+,pointType122Resource4ProgrammedCycleTime        :: !PointType122Resource4ProgrammedCycleTime
+,pointType122Resource4CurrentCycleTime           :: !PointType122Resource4CurrentCycleTime
+,pointType122KernelStatus                        :: !PointType122KernelStatus
+,pointType122ClearKernelCommand                  :: !PointType122ClearKernelCommand
+,pointType122UserCProgramProgramIdentifier       :: !PointType122UserCProgramProgramIdentifier
+,pointType122UserCProgramVersionString           :: !PointType122UserCProgramVersionString
+,pointType122ProgramTimeDateStamp                :: !PointType122ProgramTimeDateStamp
                              
   
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Eq,Read,Show)                       
                                   
 type PointType122PowerSwitch                     = Bool   
 type PointType122RSIEnable                       = Bool 
@@ -55,26 +61,26 @@ type PointType122RSIRunning                      = Bool
 type PointType122ETCPRunning                     = Bool   
 type PointType122IXDRunning                      = Bool  
 type PointType122CleanStoredResources            = Bool            
-type PointType122Resource1Name                   = BS.ByteString     
+type PointType122Resource1Name                   = ByteString     
 type PointType122Resource1Status                 = Int8       
 type PointType122Resource1ProgrammedCycleTime    = Word32                    
 type PointType122Resource1CurrentCycleTime       = Word32                 
-type PointType122Resource2Name                   = BS.ByteString     
+type PointType122Resource2Name                   = ByteString     
 type PointType122Resource2Status                 = Int8       
 type PointType122Resource2ProgrammedCycleTime    = Word32                    
 type PointType122Resource2CurrentCycleTime       = Word32                 
-type PointType122Resource3Name                   = BS.ByteString     
+type PointType122Resource3Name                   = ByteString     
 type PointType122Resource3Status                 = Int8       
 type PointType122Resource3ProgrammedCycleTime    = Word32                    
 type PointType122Resource3CurrentCycleTime       = Word32                 
-type PointType122Resource4Name                   = BS.ByteString     
+type PointType122Resource4Name                   = ByteString     
 type PointType122Resource4Status                 = Int8       
 type PointType122Resource4ProgrammedCycleTime    = Word32                    
 type PointType122Resource4CurrentCycleTime       = Word32                 
 type PointType122KernelStatus                    = Word8    
 type PointType122ClearKernelCommand              = Bool          
-type PointType122UserCProgramProgramIdentifier   = BS.ByteString                     
-type PointType122UserCProgramVersionString       = BS.ByteString                 
+type PointType122UserCProgramProgramIdentifier   = ByteString                     
+type PointType122UserCProgramVersionString       = ByteString                 
 type PointType122ProgramTimeDateStamp            = Word32            
 
   

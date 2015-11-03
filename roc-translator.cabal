@@ -25,14 +25,20 @@ Library
 
   Build-Depends:        base >= 4 && < 5
                       , binary             
-                      , bytestring         >= 0.10.4.0 
-                      , crc-fast           == 0.1.0 
-                      , crc16-table        == 0.1
-                      , lens               >= 3.10
-                      , roc-protocol-types >= 0.0.0.0
-                      , serialport         >= 0.4.7 && < 0.4.8
-                      , transformers       >= 0.3.0.0 
-                      , time               >= 1.4.0.1
+                      , bytestring          >= 0.10.4.0
+                      , cereal-conduit      >= 0.7.2.3
+                      , conduit-combinators >= 0.3.0.6
+                      , conduit-extra       >= 1.1.6.2
+                      , containers
+                      , crc-fast            == 0.1.0
+                      , crc16-table         == 0.1
+                      , crc16-calculator
+                      , lens                >= 3.10
+                      , roc-protocol-types  >= 0.0.0.0
+                      , serialport          >= 0.4.7 && < 0.4.8
+                      , transformers        >= 0.3.0.0 
+                      , time                >= 1.4.0.1
+                      , text
 
 Test-Suite spec
   Type:                 exitcode-stdio-1.0

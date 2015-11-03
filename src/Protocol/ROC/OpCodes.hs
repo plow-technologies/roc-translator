@@ -31,12 +31,12 @@ opCode7 cfg = let hostAddress = rocConfigHostAddress cfg
 --                            timeDataBytes = BS.
 --                        in BS.append (BS.pack (rocAddress ++ hostAddress ++ [8])) (timeData)
 
-opCode10 :: RocConfig -> BS.ByteString
-opCode10 cfg = let hostAddress = rocConfigHostAddress cfg
-                   rocAddress = rocConfigRocAddress cfg
+opCode10 :: RocConfig -> StrictByteString
+opCode10 cfg = let hostAdd = rocConfigHostAddress cfg
+                   rocAdd = rocConfigRocAddress cfg
                    login = toLazyByteString.stringUtf8 $ rocLogin cfg
                    password = toLazyByteString.word16LE  $ rocPassword cfg
-               in  BS.pack (rocAddress ++ hostAddress ++ [10,3,0,0,3])
+               in  BS.pack (rocAdd ++ hostAdd ++ [10,3,0,0,3])
 
 opCode17 :: RocConfig -> BS.ByteString
 opCode17 cfg = let hostAddress = rocConfigHostAddress cfg

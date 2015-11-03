@@ -1,27 +1,34 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType176 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           getWord32le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8,Word16,Word32)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (anyButNull)
 
 data PointType176 = PointType176 {
  
- pointType176DeviceTag                   :: !PointType176DeviceTag                    
-,pointType176DeviceID                    :: !PointType176DeviceID                    
-,pointType176ManufaturerID               :: !PointType176ManufaturerID                    
-,pointType176DeviceType                  :: !PointType176DeviceType                    
-,pointType176CommissionedListIndex       :: !PointType176CommissionedListIndex                    
-,pointType176CommissionedFlag            :: !PointType176CommissionedFlag                    
+ pointType176DeviceTag                   :: !PointType176DeviceTag
+,pointType176DeviceID                    :: !PointType176DeviceID
+,pointType176ManufaturerID               :: !PointType176ManufaturerID
+,pointType176DeviceType                  :: !PointType176DeviceType
+,pointType176CommissionedListIndex       :: !PointType176CommissionedListIndex
+,pointType176CommissionedFlag            :: !PointType176CommissionedFlag
 
-} deriving (Eq, Show, Generic)                       
+} deriving (Eq,Read,Show)                       
 
-type PointType176DeviceTag               = BS.ByteString                      
+type PointType176DeviceTag               = ByteString                      
 type PointType176DeviceID                = Word32                      
 type PointType176ManufaturerID           = Word16                      
 type PointType176DeviceType              = Word16                      

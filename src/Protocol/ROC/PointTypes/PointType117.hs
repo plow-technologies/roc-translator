@@ -1,52 +1,56 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude  #-}
 
 module Protocol.ROC.PointTypes.PointType117 where
 
-import GHC.Generics
-import Data.Int
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Utils
-import Protocol.ROC.Float
+import Data.Binary.Get    (getWord8,getWord16le,Get)
+import Data.Int           (Int16)
+import Data.Word          (Word8,Word16)
+import Prelude            (($),
+                           return,
+                           Bool,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Utils (anyButNull,getInt16)
+import Protocol.ROC.Float (getIeeeFloat32)
 
 
 data PointType117 = PointType117 {
   
- pointType117TransmissionMode                :: !PointType117TransmissionMode                       
-,pointType117ByteOrder                       :: !PointType117ByteOrder                       
-,pointType117EventLogEnable                  :: !PointType117EventLogEnable                       
-,pointType117SlaveExceptionStatus            :: !PointType117SlaveExceptionStatus                       
-,pointType117MasterPollRequestTrigger        :: !PointType117MasterPollRequestTrigger                       
-,pointType117MasterStartingRequetNum         :: !PointType117MasterStartingRequetNum                       
-,pointType117MasterNumRequests               :: !PointType117MasterNumRequests                       
-,pointType117MasterContPollingEnable         :: !PointType117MasterContPollingEnable                       
-,pointType117MasterPollRequestDelay          :: !PointType117MasterPollRequestDelay                       
-,pointType117ModbusMode                      :: !PointType117ModbusMode                       
-,pointType117LowScalingInteger               :: !PointType117LowScalingInteger                       
-,pointType117HighScalingInteger              :: !PointType117HighScalingInteger                       
-,pointType117LowFloatScale1                  :: !PointType117LowFloatScale1                       
-,pointType117HighFloatScale1                 :: !PointType117HighFloatScale1                       
-,pointType117LowFloatScale2                  :: !PointType117LowFloatScale2                       
-,pointType117HighFloatScale2                 :: !PointType117HighFloatScale2                       
-,pointType117LowFloatScale3                  :: !PointType117LowFloatScale3                       
-,pointType117HighFloatScale3                 :: !PointType117HighFloatScale3                       
-,pointType117LowFloatScale4                  :: !PointType117LowFloatScale4                       
-,pointType117HighFloatScale4                 :: !PointType117HighFloatScale4                       
-,pointType117LowFloatScale5                  :: !PointType117LowFloatScale5                       
-,pointType117HighFloatScale5                 :: !PointType117HighFloatScale5                       
-,pointType117LowFloatScale6                  :: !PointType117LowFloatScale6                       
-,pointType117HighFloatScale6                 :: !PointType117HighFloatScale6                       
-,pointType117LowFloatScale7                  :: !PointType117LowFloatScale7                       
-,pointType117HighFloatScale7                 :: !PointType117HighFloatScale7                       
-,pointType117LowFloatScale8                  :: !PointType117LowFloatScale8                       
-,pointType117HighFloatScale8                 :: !PointType117HighFloatScale8                       
-,pointType117MasterPollTimeout               :: !PointType117MasterPollTimeout                       
-,pointType117MasterPollNumRetries            :: !PointType117MasterPollNumRetries                       
+ pointType117TransmissionMode                :: !PointType117TransmissionMode
+,pointType117ByteOrder                       :: !PointType117ByteOrder
+,pointType117EventLogEnable                  :: !PointType117EventLogEnable
+,pointType117SlaveExceptionStatus            :: !PointType117SlaveExceptionStatus
+,pointType117MasterPollRequestTrigger        :: !PointType117MasterPollRequestTrigger
+,pointType117MasterStartingRequetNum         :: !PointType117MasterStartingRequetNum
+,pointType117MasterNumRequests               :: !PointType117MasterNumRequests
+,pointType117MasterContPollingEnable         :: !PointType117MasterContPollingEnable
+,pointType117MasterPollRequestDelay          :: !PointType117MasterPollRequestDelay
+,pointType117ModbusMode                      :: !PointType117ModbusMode
+,pointType117LowScalingInteger               :: !PointType117LowScalingInteger
+,pointType117HighScalingInteger              :: !PointType117HighScalingInteger
+,pointType117LowFloatScale1                  :: !PointType117LowFloatScale1
+,pointType117HighFloatScale1                 :: !PointType117HighFloatScale1
+,pointType117LowFloatScale2                  :: !PointType117LowFloatScale2
+,pointType117HighFloatScale2                 :: !PointType117HighFloatScale2
+,pointType117LowFloatScale3                  :: !PointType117LowFloatScale3
+,pointType117HighFloatScale3                 :: !PointType117HighFloatScale3
+,pointType117LowFloatScale4                  :: !PointType117LowFloatScale4
+,pointType117HighFloatScale4                 :: !PointType117HighFloatScale4
+,pointType117LowFloatScale5                  :: !PointType117LowFloatScale5
+,pointType117HighFloatScale5                 :: !PointType117HighFloatScale5
+,pointType117LowFloatScale6                  :: !PointType117LowFloatScale6
+,pointType117HighFloatScale6                 :: !PointType117HighFloatScale6
+,pointType117LowFloatScale7                  :: !PointType117LowFloatScale7
+,pointType117HighFloatScale7                 :: !PointType117HighFloatScale7
+,pointType117LowFloatScale8                  :: !PointType117LowFloatScale8
+,pointType117HighFloatScale8                 :: !PointType117HighFloatScale8
+,pointType117MasterPollTimeout               :: !PointType117MasterPollTimeout
+,pointType117MasterPollNumRetries            :: !PointType117MasterPollNumRetries
                              
   
-} deriving (Read,Eq, Show, Generic)                       
+} deriving (Eq,Read,Show)                       
                                   
 type PointType117TransmissionMode            = Bool                             
 type PointType117ByteOrder                   = Bool                             

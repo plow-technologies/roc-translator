@@ -1,15 +1,21 @@
-{-# LANGUAGE TupleSections, OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, RecordWildCards,
-             DeriveGeneric ,MultiParamTypeClasses ,FlexibleInstances  #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Protocol.ROC.PointTypes.PointType174 where
 
-import GHC.Generics
-import qualified Data.ByteString as BS
-import Data.Word
-import Data.Binary
-import Data.Binary.Get
-import Protocol.ROC.Float
-import Protocol.ROC.Utils
+import Data.Binary.Get    (getByteString,
+                           getWord8,
+                           getWord16le,
+                           Get)
+import Data.ByteString    (ByteString)
+import Data.Word          (Word8,Word16)
+import Prelude            (($),
+                           return,
+                           Eq,
+                           Float,
+                           Read,
+                           Show)
+import Protocol.ROC.Float (getIeeeFloat32)
+import Protocol.ROC.Utils (getTLP)
 
 data PointType174 = PointType174 {
  
@@ -19,9 +25,9 @@ data PointType174 = PointType174 {
 ,pointType174UniqueIdForTLP                :: !PointType174UniqueIdForTLP
 ,pointType174ExportedTLPCurrentValue       :: !PointType174ExportedTLPCurrentValue
 
-} deriving (Eq, Show, Generic)                       
+} deriving (Eq,Read,Show)                       
 
-type PointType174ExportedParameterTag      = BS.ByteString
+type PointType174ExportedParameterTag      = ByteString
 type PointType174ExportedParameterTLP      = [Word8]
 type PointType174NetworkID                 = Word8
 type PointType174UniqueIdForTLP            = Word16
