@@ -10,7 +10,7 @@ import Data.Binary.Get             (getLazyByteString,getWord8)
 import Data.Binary.Put             (putByteString,putLazyByteString,putWord8,runPut)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LB
-import Data.Conduit.Cereal         (sinkGet)
+import Data.Conduit.Serialization.Binary  (sinkGet)
 import Data.Conduit.Network        (appSink,appSource,clientSettings,runTCPClient)
 import Data.List 
 import Data.IntMap.Strict          (minViewWithKey,size,Key)
@@ -25,7 +25,7 @@ import Protocol.ROC.OpCodes
 import Protocol.ROC.RocSerialize
 import System.IO.Error             (tryIOError)
 
-import Numeric                                            
+--import Numeric                                            
 
 
 -- | getPointType is designed for retrieving and entire PointType for serial comms only
@@ -79,8 +79,8 @@ requestOpCodeTableData hostAdd modemCfg accessCfg opTable = do
         appSource server $$ sinkGet getRoutine
   eitherRocOpCodeResponse <- tryIOError (runTCPClient (clientSettings (_port modemCfg) (encodeUtf8 $ _url modemCfg)) sendRequest)
   case eitherRocOpCodeResponse of
-    Left err -> return.Left $  show err ++ show req
-    Right resp -> return.Right resp
+    Left err -> return.Left $ show err
+    Right resp -> return.Right $ resp
 
 buildOpTableRequest :: HostAddress -> RocAccessConfig -> OpCodeTable l -> Either String RocOpCodeRequest
 buildOpTableRequest hostAdd cfg table = (\ dataBytes ->  RocOpCodeRequest {reqRocAddress = RocAdd { rocUnitNumber = _unitNumber cfg, rocGroupNumber = _groupNumber cfg},
@@ -88,8 +88,8 @@ buildOpTableRequest hostAdd cfg table = (\ dataBytes ->  RocOpCodeRequest {reqRo
                                                                            reqOpCodeNumber = 10 ,
                                                                            reqDataByteString = dataBytes}) <$> eitherDataBytes
     where
-      
-      maybeMinKey = undefined --  fst <$> fst <$> minViewWithKey .  _unOpCodeData . _opCodeData $ table
+      maybeMinKey :: Maybe Word8
+      maybeMinKey = fromIntegral . fst . fst <$> (minViewWithKey .  _unOpCodeData . _opCodeData $ table)
       numberOfKeys = fromIntegral . size . _unOpCodeData . _opCodeData $ table
       eitherDataBytes = case (\ minKey ->  LB.pack [3, _unOpCodeTableId . _opCodeTableId $ table, minKey, numberOfKeys]) <$> maybeMinKey of
                           Nothing -> Left "No minkey found in OpCodeData IntMap"
@@ -203,12 +203,12 @@ testingEncode = do
     let manualByteString = BS.append (opCode10 testRocConfig) (lzyBSto16BScrc.pack8to16 $ BS.unpack $ opCode10 testRocConfig)
         encodedByteString = encode testRocOpCodeRequest
     if encodedByteString == LB.fromStrict manualByteString
-    then print "Successfully encoded RocOpCodeRequest"
-    else print "Failed to encode RopOpCodeRequest"
+    then print ("Successfully encoded RocOpCodeRequest" :: String)
+    else print ("Failed to encode RopOpCodeRequest" :: String)
 
 testingDecodingByteString :: IO ()
 testingDecodingByteString = 
     if testRocOpCodeRequest == (decode testRocOpCodeRequestByteString :: RocOpCodeRequest)
-    then print "Successfully decoded RocOpCodeRequest"
-    else print "Failed to decode RocOpCodeRequest"
+    then print ("Successfully decoded RocOpCodeRequest" :: String)
+    else print ("Failed to decode RocOpCodeRequest" :: String)
 

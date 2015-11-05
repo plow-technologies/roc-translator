@@ -24,9 +24,10 @@ Library
   Other-Modules:        Protocol.ROC.Internal
 
   Build-Depends:        base >= 4 && < 5
-                      , binary             
+                      , binary
+                      , bytes               >= 0.15.0.1
                       , bytestring          >= 0.10.4.0
-                      , cereal-conduit      >= 0.7.2.3
+                      , binary-conduit      >= 0.1.2.3
                       , conduit-combinators >= 0.3.0.6
                       , conduit-extra       >= 1.1.6.2
                       , containers
