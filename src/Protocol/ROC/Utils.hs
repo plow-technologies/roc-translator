@@ -1,32 +1,36 @@
-{-# LANGUAGE TupleSections, OverloadedStrings,TypeFamilies,MultiParamTypeClasses,FlexibleInstances  #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TupleSections         #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 module Protocol.ROC.Utils where
 
-import Control.Applicative
-import Data.Binary
-import Data.Int
-import Data.Binary.Get
-import qualified Data.ByteString as BS
-import Data.ByteString.Builder
-import qualified Data.ByteString.Lazy as LB
-import Foreign.CRC
-import Data.Time.Clock.POSIX
+-- import           Control.Applicative
+import           Data.Binary
+import           Data.Binary.Get
+import qualified Data.ByteString         as BS
+import           Data.ByteString.Builder
+import qualified Data.ByteString.Lazy    as LB
+import           Data.Int
+import           Data.Time.Clock.POSIX
+import           Foreign.CRC
 
 getTLP :: Get [Word8]
 getTLP = do
   t <- getWord8
   l <- getWord8
   p <- getWord8
-  let tlplist = ([t] ++ [l] ++ [p])    
+  let tlplist = ([t] ++ [l] ++ [p])
   return $ tlplist
 
-anyButNull :: Get Bool 
-anyButNull = do 
+anyButNull :: Get Bool
+anyButNull = do
   c <- getWord8
-  return $ test c 
-  where 
-    test :: Word8 -> Bool 
-    test x = (fromIntegral x) == 1
+  return $ test c
+  where
+    test :: Word8 -> Bool
+    test x = (fromIntegral x) == (1 :: Integer)
 
 getInt16 :: Get Int16
 getInt16 = do
@@ -34,12 +38,12 @@ getInt16 = do
   return $ fromIntegral x
 
 getInt8 :: Get Int8
-getInt8 = do  
+getInt8 = do
   x <- getWord8
   return $ fromIntegral x
 
 getTime :: Get [Word8]
-getTime = do  
+getTime = do
   second <- getWord8
   minute <- getWord8
   hour <- getWord8
@@ -50,12 +54,12 @@ getTime = do
   return $ timeList
 
 getPosixTime :: Get POSIXTime
-getPosixTime = do  
+getPosixTime = do
   x <- getWord32le
   return $ fromIntegral x
-  
+
 crcTestBS :: Word8 -> Bool
-crcTestBS w 
+crcTestBS w
   |w == 0 = True
   |otherwise = False
 

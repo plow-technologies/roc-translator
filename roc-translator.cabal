@@ -36,7 +36,7 @@ Library
                       , crc16-table         == 0.1
                       , crc16-calculator
                       , lens                >= 3.10
-                      , roc-protocol-types  >= 0.0.2.0
+                      , roc-protocol-types  >= 0.0.2.1
                       , serialport          >= 0.4.7 && < 0.4.8
                       , transformers        >= 0.3.0.0 
                       , time                >= 1.4.0.1
