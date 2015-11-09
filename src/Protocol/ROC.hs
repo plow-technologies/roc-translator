@@ -8,15 +8,14 @@ import           Conduit                       (sourceLazy, ($$))
 import           Control.Monad
 import           CRC16.Calculator
 import           Data.Bimap                    (Bimap, empty, insert)
+import qualified Data.ByteString.Lazy          as BL
 import           Data.Serialize                (Get, Serialize, decode, encode,
                                                 get, put)
 -- import           Data.Binary                       (Binary, Get, decode, encode,
 --                                                     get, put)
-import           Data.Serialize.Get            (getLazyByteString, getWord32le,
+import           Data.Serialize.Get            (getByteString, getWord32le,
                                                 getWord8, runGet)
-import           Data.Serialize.Put            (putByteString,
-                                                putLazyByteString, putWord8,
-                                                runPut)
+import           Data.Serialize.Put            (putByteString, putWord8, runPut)
 -- import           Data.Binary.Get                   (getLazyByteString, getWord8,
 --                                                     getWord32le, runGet)
 -- import           Data.Binary.Put                   (putByteString,
@@ -34,17 +33,19 @@ import           Data.Text                     (Text, unpack)
 import           Data.Text.Encoding            (encodeUtf8)
 import           Data.Word                     (Word8)
 -- import           Protocol.ROC.FullyDefinedPointType
-import           Protocol.ROC.OpCodes
+-- import           Protocol.ROC.OpCodes
 -- import           Protocol.ROC.PointTypes
-import           Protocol.ROC.ROCConfig
+-- import           Protocol.ROC.ROCConfig
 -- import           Protocol.ROC.RocSerialize
-import           Protocol.ROC.Utils
+-- import           Protocol.ROC.Utils
 import           SingleWell.Roc.Protocol.Types
 import           System.Hardware.Serialport
 import           System.IO.Error               (tryIOError)
 
 
 import           Numeric
+
+type StrictByteString = BS.ByteString
 
 -- | getPointType is designed for retrieving and entire PointType for serial comms only
 
@@ -55,7 +56,7 @@ import           Numeric
 --       pc = fdptParameterCount fdpt
 --       sp = fdptStartParameter fdpt
 --   dataBytes <- fdataBytes cfg pn ptid pc sp
---   let fetchedPointType = fetchPointType ptid (LB.fromStrict dataBytes)
+--   let fetchedPointType = fetchPointType ptid (BS.fromStrict dataBytes)
 --   print fetchedPointType
 
 -- | writePointType is designed to write to a specific field in a PointType for serial comms only
@@ -98,7 +99,7 @@ requestOpCodeTableData hostAdd modemCfg accessCfg opTable =
     Right (rocRequest:: RocOpCodeRequest) -> do
       print $ showInt <$> BS.unpack (encode $ rocRequest) <*> [""]
       print rocRequest
-      let req = sourceLazy $ runPut.put $ rocRequest
+      let req = sourceLazy $ BL.fromStrict.runPut.put $ rocRequest
           sendRequest server = do
                           req $$ appSink server
                           appSource server $$ sinkGet getRoutine
@@ -142,30 +143,30 @@ data RocOpCodeResponse = RocOpCodeResponse { respRocAddress     :: RocAdd,
                                              respHostAddress    :: HostAddress,
                                              respOpCodeNumber   :: Word8,
                                              respDataBytesCount :: Word8,
-                                             respDataByteString :: LazyByteString
+                                             respDataByteString :: StrictByteString
                                            } deriving (Eq,Show)
 
 data RocOpCodeRequest = RocOpCodeRequest { reqRocAddress     :: RocAdd,
                                            reqHostAddress    :: HostAddress,
                                            reqOpCodeNumber   :: Word8,
-                                           reqDataByteString :: LazyByteString
+                                           reqDataByteString :: StrictByteString
                                          } deriving (Eq,Show)
 
 
-newtype OpCodeNumber = OpCodeNumber { _unOpCodeNumber :: Word8 }
-    deriving (Eq,Show)
+-- newtype OpCodeNumber = OpCodeNumber { _unOpCodeNumber :: Word8 }
+--     deriving (Eq,Show)
 
 data OpCodeDataResponse = Opcode10DataResponse { _opCodeTableNumber   :: Word8,
                                                  _tableStartingNumber :: Word8,
                                                  _numberOfTableValues :: Word8,
                                                  _tableVersionNumber  :: Float,
-                                                 _opCode10DataBytes   :: LazyByteString}
+                                                 _opCode10DataBytes   :: StrictByteString}
 
-buildOpCodeGet :: RocOpCodeRespones -> OpCodeNumber -> Get OpCodeDataResponse
-buildOpCodeGet response opNumb =
-    case _unOpCodNumber opNumber of
-      10 -> opCode10Get
-      otherwise -> fail "Opocode Not implemented yet"
+-- buildOpCodeGet :: RocOpCodeResponse -> OpCodeNumber -> Get OpCodeDataResponse
+-- buildOpCodeGet response opNumb =
+--     case _unOpCodNumber opNumber of
+--       10 -> opCode10Get
+--       otherwise -> fail "Opocode Not implemented yet"
 
 -- opCode10Get :: Get OpCodeDataResponse
 -- opCode10Get = do
@@ -175,7 +176,7 @@ buildOpCodeGet response opNumb =
 --   tableVersion <- getIeeeFloat32
 --   databytes    <- getLazyByteString
 
-instance Binary RocOpCodeRequest where
+instance Serialize RocOpCodeRequest where
     get = do
       rocUnit           <- getWord8
       rocGroup          <- getWord8
@@ -183,16 +184,16 @@ instance Binary RocOpCodeRequest where
       hostGroup         <- getWord8
       opCode            <- getWord8
       numberOfDataBytes <- getWord8
-      dataByteString    <- getLazyByteString (2 + fromIntegral numberOfDataBytes)
-      let repackBytes = LB.pack [rocUnit,rocGroup,hostUnit,hostGroup,opCode,numberOfDataBytes]
-      if checkCRC16 (ILazyBS $ LB.append repackBytes dataByteString) rocCRC16Config
+      dataByteString    <- getByteString (2 + fromIntegral numberOfDataBytes)
+      let repackBytes = BS.pack [rocUnit,rocGroup,hostUnit,hostGroup,opCode,numberOfDataBytes]
+      if checkCRC16 (IStrictBS $ BS.append repackBytes dataByteString) rocCRC16Config
       then return RocOpCodeRequest { reqRocAddress = RocAdd { rocUnitNumber = rocUnit, rocGroupNumber = rocGroup},
                                      reqHostAddress = HostAddress { hostUnitNumber = hostUnit, hostGroupNumber = hostGroup},
-                                     reqOpCodeNumber = OpCodeNumber opCode,
-                                     reqDataByteString = LB.take (fromIntegral numberOfDataBytes) dataByteString}
+                                     reqOpCodeNumber =  opCode,
+                                     reqDataByteString = BS.take (fromIntegral numberOfDataBytes) dataByteString}
       else fail "CRC check faild"
 
-    put request = putByteString $ appendCRC16 (ILazyBS $ runPut putHeader) rocCRC16Config
+    put request = putByteString $ appendCRC16 (IStrictBS $ runPut putHeader) rocCRC16Config
         where
           putHeader = do
             putWord8 . rocUnitNumber. reqRocAddress $ request
@@ -200,10 +201,10 @@ instance Binary RocOpCodeRequest where
             putWord8 . hostUnitNumber . reqHostAddress $ request
             putWord8 . hostGroupNumber . reqHostAddress $ request
             putWord8 . reqOpCodeNumber $ request
-            putWord8 . fromIntegral . LB.length . reqDataByteString $ request
-            putLazyByteString . reqDataByteString $ request
+            putWord8 . fromIntegral . BS.length . reqDataByteString $ request
+            putByteString . reqDataByteString $ request
 
-instance Binary RocOpCodeResponse where
+instance Serialize RocOpCodeResponse where
     get = do
       hostUnit          <- getWord8
       hostGroup         <- getWord8
@@ -211,14 +212,14 @@ instance Binary RocOpCodeResponse where
       rocGroup          <- getWord8
       opCode            <- getWord8
       numberOfDataBytes <- getWord8
-      dataByteString    <- getLazyByteString (2 + fromIntegral numberOfDataBytes)
-      let repackBytes = LB.pack [hostUnit,hostGroup,rocUnit,rocGroup,opCode,numberOfDataBytes]
-      if checkCRC16 (ILazyBS $ LB.append repackBytes dataByteString) rocCRC16Config
+      dataByteString    <- getByteString (2 + fromIntegral numberOfDataBytes)
+      let repackBytes = BS.pack [hostUnit,hostGroup,rocUnit,rocGroup,opCode,numberOfDataBytes]
+      if checkCRC16 (IStrictBS $ BS.append repackBytes dataByteString) rocCRC16Config
       then return RocOpCodeResponse { respRocAddress = RocAdd { rocUnitNumber = rocUnit, rocGroupNumber = rocGroup},
                                       respHostAddress = HostAddress { hostUnitNumber = hostUnit, hostGroupNumber = hostGroup},
                                       respOpCodeNumber = opCode,
                                       respDataBytesCount = numberOfDataBytes,
-                                      respDataByteString = LB.take (fromIntegral numberOfDataBytes) dataByteString}
+                                      respDataByteString = BS.take (fromIntegral numberOfDataBytes) dataByteString}
 
       else fail "CRC check failed"
     put response = do
@@ -228,7 +229,7 @@ instance Binary RocOpCodeResponse where
       putWord8 $ rocGroupNumber . respRocAddress $ response
       putWord8 $ respOpCodeNumber response
       putWord8 $ respDataBytesCount response
-      putLazyByteString $ respDataByteString response
+      putByteString $ respDataByteString response
 
 
 ----------------------------- Testing Stuff -----------------------------------------------
@@ -244,19 +245,21 @@ testQuery = do
              print response
              let opCodeTableGet = buildOpCodeTableGet opCodeTable
                  result = runGet opCodeTableGet (respDataByteString response)
-             return . Right $ result
+             return  result
 
 testHostAddress :: HostAddress
 testHostAddress = HostAddress 1 3
 
 testRocOpCodeRequest :: RocOpCodeRequest
-testRocOpCodeRequest = RocOpCodeRequest (RocAdd 240 240) (HostAddress 1 3) 10 $ LB.pack [0,0,44]
+testRocOpCodeRequest = RocOpCodeRequest (RocAdd 240 240) (HostAddress 1 3) 10 $ BS.pack [0,0,44]
 
-testRocOpCodeRequestByteString :: LazyByteString
+testRocOpCodeRequestByteString :: StrictByteString
 testRocOpCodeRequestByteString = "\240\240\SOH\ETX\n\ETX\NUL\NUL\ETX\195\247"
 
-testRocConfig :: RocConfig
-testRocConfig = RocConfig "/dev/ttyUSB0" [240,240] [1,3] CS19200 "LOI" 1000
+
+-- OLD
+-- testRocConfig :: RocConfig
+-- testRocConfig = RocConfig "/dev/ttyUSB0" [240,240] [1,3] CS19200 "LOI" 1000
 
 testRocAccessConfig :: RocAccessConfig
 testRocAccessConfig = RocAccessConfig 240 240 "LOI" 1000
@@ -325,17 +328,17 @@ myDataMap = TlpDataRequest <$> simpleIntMap
                              ( 43 , TlpFloat (Left ())),
                              ( 44 , TlpFloat (Left ()))]
 
-testingEncode :: IO ()
-testingEncode = do
-    let manualByteString = BS.append (opCode10 testRocConfig) (lzyBSto16BScrc.pack8to16 $ BS.unpack $ opCode10 testRocConfig)
-        encodedByteString = encode testRocOpCodeRequest
-    if encodedByteString == LB.fromStrict manualByteString
-    then print ("Successfully encoded RocOpCodeRequest" :: String)
-    else print ("Failed to encode RopOpCodeRequest" :: String)
+-- testingEncode :: IO ()
+-- testingEncode = do
+--     let manualByteString = BS.append (opCode10 testRocConfig) (lzyBSto16BScrc.pack8to16 $ BS.unpack $ opCode10 testRocConfig)
+--         encodedByteString = encode testRocOpCodeRequest
+--     if encodedByteString == BS.fromStrict manualByteString
+--     then print ("Successfully encoded RocOpCodeRequest" :: String)
+--     else print ("Failed to encode RopOpCodeRequest" :: String)
 
 testingDecodingByteString :: IO ()
 testingDecodingByteString =
-    if testRocOpCodeRequest == (decode testRocOpCodeRequestByteString :: RocOpCodeRequest)
+    if (Right testRocOpCodeRequest)  == (decode testRocOpCodeRequestByteString :: Either String RocOpCodeRequest)
     then print ("Successfully decoded RocOpCodeRequest" :: String)
     else print ("Failed to decode RocOpCodeRequest" :: String)
 

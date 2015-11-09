@@ -21,7 +21,7 @@ Library
 --                        Protocol.ROC.FullyDefinedPointType
 --                        Protocol.ROC.RocSerialize                       
 --
-  Other-Modules:        Protocol.ROC.Internal
+  Other-Modules:        
 
   Build-Depends:        base >= 4 && < 5
                       , bimap
