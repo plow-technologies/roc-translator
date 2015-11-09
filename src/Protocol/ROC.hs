@@ -10,7 +10,7 @@ import           Data.Bimap                        (Bimap, empty, insert)
 import           Data.Binary                       (Binary, Get, decode, encode,
                                                     get, put)
 import           Data.Binary.Get                   (getLazyByteString, getWord8,
-                                                    runGet)
+                                                    getWord32le, runGet)
 import           Data.Binary.Put                   (putByteString,
                                                     putLazyByteString, putWord8,
                                                     runPut)
@@ -71,18 +71,18 @@ import           Numeric
 
 -- | runOpCodeRaw is designed for running an opcode on the roc
 
-runOpCodeRaw :: RocConfig -> (RocConfig -> BS.ByteString) -> IO BS.ByteString
-runOpCodeRaw cfg opCode = do
-  let port = rocConfigPort cfg
-      commRate = rocCommSpeed cfg
-      bs = BS.append (opCode cfg) (lzyBSto16BScrc.pack8to16 $ BS.unpack $ opCode cfg)
-  s <- openSerial port defaultSerialSettings { commSpeed = commRate }
-  _ <- send s $ bs
-  receivebs <- recvAllBytes s 255
-  closeSerial s
-  print $ showInt <$> BS.unpack bs <*> [""]
-  print $ showInt <$> BS.unpack receivebs <*> [""]
-  return receivebs
+-- runOpCodeRaw :: RocConfig -> (RocConfig -> BS.ByteString) -> IO BS.ByteString
+-- runOpCodeRaw cfg opCode = do
+--   let port = rocConfigPort cfg
+--       commRate = rocCommSpeed cfg
+--       bs = BS.append (opCode cfg) (lzyBSto16BScrc.pack8to16 $ BS.unpack $ opCode cfg)
+--   s <- openSerial port defaultSerialSettings { commSpeed = commRate }
+--   _ <- send s $ bs
+--   receivebs <- recvAllBytes s 255
+--   closeSerial s
+--   print $ showInt <$> BS.unpack bs <*> [""]
+--   print $ showInt <$> BS.unpack receivebs <*> [""]
+--   return receivebs
 
 
 requestOpCodeTableData :: HostAddress -> ModemConfig -> RocAccessConfig -> OpCodeTable l -> IO (Either String RocOpCodeResponse)
@@ -145,7 +145,29 @@ data RocOpCodeRequest = RocOpCodeRequest { reqRocAddress     :: RocAdd,
                                            reqDataByteString :: LazyByteString
                                          } deriving (Eq,Show)
 
---data OpCode = OpCode10 deriving Show
+
+newtype OpCodeNumber = OpCodeNumber { _unOpCodeNumber :: Word8 }
+    deriving (Eq,Show)
+
+data OpCodeDataResponse = Opcode10DataResponse { _opCodeTableNumber   :: Word8,
+                                                 _tableStartingNumber :: Word8,
+                                                 _numberOfTableValues :: Word8,
+                                                 _tableVersionNumber  :: Float,
+                                                 _opCode10DataBytes   :: LazyByteString}
+
+buildOpCodeGet :: RocOpCodeRespones -> OpCodeNumber -> Get OpCodeDataResponse
+buildOpCodeGet response opNumb =
+    case _unOpCodNumber opNumber of
+      10 -> opCode10Get 
+      otherwise -> fail "Opocode Not implemented yet"
+
+opCode10Get :: Get OpCodeDataResponse
+opCode10Get = do
+  tablenumber  <- getWord8
+  startNumber  <- getWord8
+  numberOfVals <- getWord8
+  tableVersion <- getIeeeFloat32
+  databytes    <- getLazyByteString
 
 instance Binary RocOpCodeRequest where
     get = do
@@ -160,7 +182,7 @@ instance Binary RocOpCodeRequest where
       if checkCRC16 (ILazyBS $ LB.append repackBytes dataByteString) rocCRC16Config
       then return RocOpCodeRequest { reqRocAddress = RocAdd { rocUnitNumber = rocUnit, rocGroupNumber = rocGroup},
                                      reqHostAddress = HostAddress { hostUnitNumber = hostUnit, hostGroupNumber = hostGroup},
-                                     reqOpCodeNumber = opCode,
+                                     reqOpCodeNumber = OpCodeNumber opCode,
                                      reqDataByteString = LB.take (fromIntegral numberOfDataBytes) dataByteString}
       else fail "CRC check faild"
 
@@ -249,53 +271,53 @@ makeBimap = foldrWithKey bimapFcn empty myDataMap
 makeDataMap :: Either Text (OpCodeData TlpDataRequest)
 makeDataMap = makeOpCodeData myDataMap
 
-myDataMap :: IntMap (TlpDataRequest)
+myDataMap :: IntMap TlpDataRequest
 myDataMap = TlpDataRequest <$> simpleIntMap
   where
     simpleIntMap = fromList [( 1  , TlpUnsignedInt8 (Left ())),
-                                  ( 2  , TlpUndefined32 (Left ())),
-                                  ( 3  , TlpUnsignedInt8 (Left ())),
-                                  ( 4  , TlpFloat (Left ())),
-                                  ( 5  , TlpFloat (Left ())),
-                                  ( 6  , TlpFloat (Left ())),
-                                  ( 7  , TlpUnsignedInt8 (Left ())),
-                                  ( 8  , TlpFloat (Left ())),
-                                  ( 9  , TlpFloat (Left ())),
-                                  ( 10 , TlpFloat (Left ())),
-                                  ( 11 , TlpFloat (Left ())),
-                                  ( 12 , TlpFloat (Left ())),
-                                  ( 13 , TlpFloat (Left ())),
-                                  ( 14 , TlpInt16 (Left ())),
-                                  ( 15 , TlpInt16 (Left ())),
-                                  ( 16 , TlpFloat (Left ())),
-                                  ( 17 , TlpFloat (Left ())),
-                                  ( 18 , TlpFloat (Left ())),
-                                  ( 19 , TlpInt16 (Left ())),
-                                  ( 20 , TlpFloat (Left ())),
-                                  ( 21 , TlpInt16 (Left ())),
-                                  ( 22 , TlpFloat (Left ())),
-                                  ( 23 , TlpFloat (Left ())),
-                                  ( 24 , TlpFloat (Left ())),
-                                  ( 25 , TlpFloat (Left ())),
-                                  ( 26 , TlpInt16 (Left ())),
-                                  ( 27 , TlpFloat (Left ())),
-                                  ( 28 , TlpFloat (Left ())),
-                                  ( 29 , TlpFloat (Left ())),
-                                  ( 30 , TlpFloat (Left ())),
-                                  ( 31 , TlpFloat (Left ())),
-                                  ( 32 , TlpFloat (Left ())),
-                                  ( 33 , TlpFloat (Left ())),
-                                  ( 34 , TlpFloat (Left ())),
-                                  ( 35 , TlpFloat (Left ())),
-                                  ( 36 , TlpFloat (Left ())),
-                                  ( 37 , TlpFloat (Left ())),
-                                  ( 38 , TlpFloat (Left ())),
-                                  ( 39 , TlpFloat (Left ())),
-                                  ( 40 , TlpFloat (Left ())),
-                                  ( 41 , TlpFloat (Left ())),
-                                  ( 42 , TlpFloat (Left ())),
-                                  ( 43 , TlpFloat (Left ())),
-                                  ( 44 , TlpFloat (Left ()))]
+                             ( 2  , TlpUndefined32 (Left ())),
+                             ( 3  , TlpUnsignedInt8 (Left ())),
+                             ( 4  , TlpFloat (Left ())),
+                             ( 5  , TlpFloat (Left ())),
+                             ( 6  , TlpFloat (Left ())),
+                             ( 7  , TlpUnsignedInt8 (Left ())),
+                             ( 8  , TlpFloat (Left ())),
+                             ( 9  , TlpFloat (Left ())),
+                             ( 10 , TlpFloat (Left ())),
+                             ( 11 , TlpFloat (Left ())),
+                             ( 12 , TlpFloat (Left ())),
+                             ( 13 , TlpFloat (Left ())),
+                             ( 14 , TlpInt16 (Left ())),
+                             ( 15 , TlpInt16 (Left ())),
+                             ( 16 , TlpFloat (Left ())),
+                             ( 17 , TlpFloat (Left ())),
+                             ( 18 , TlpFloat (Left ())),
+                             ( 19 , TlpInt16 (Left ())),
+                             ( 20 , TlpFloat (Left ())),
+                             ( 21 , TlpInt16 (Left ())),
+                             ( 22 , TlpFloat (Left ())),
+                             ( 23 , TlpFloat (Left ())),
+                             ( 24 , TlpFloat (Left ())),
+                             ( 25 , TlpFloat (Left ())),
+                             ( 26 , TlpInt16 (Left ())),
+                             ( 27 , TlpFloat (Left ())),
+                             ( 28 , TlpFloat (Left ())),
+                             ( 29 , TlpFloat (Left ())),
+                             ( 30 , TlpFloat (Left ())),
+                             ( 31 , TlpFloat (Left ())),
+                             ( 32 , TlpFloat (Left ())),
+                             ( 33 , TlpFloat (Left ())),
+                             ( 34 , TlpFloat (Left ())),
+                             ( 35 , TlpFloat (Left ())),
+                             ( 36 , TlpFloat (Left ())),
+                             ( 37 , TlpFloat (Left ())),
+                             ( 38 , TlpFloat (Left ())),
+                             ( 39 , TlpFloat (Left ())),
+                             ( 40 , TlpFloat (Left ())),
+                             ( 41 , TlpFloat (Left ())),
+                             ( 42 , TlpFloat (Left ())),
+                             ( 43 , TlpFloat (Left ())),
+                             ( 44 , TlpFloat (Left ()))]
 
 testingEncode :: IO ()
 testingEncode = do
