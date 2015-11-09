@@ -2,40 +2,46 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+
 module Protocol.ROC where
-import           Conduit                           (sourceLazy, ($$))
+import           Conduit                       (sourceLazy, ($$))
 import           Control.Monad
 import           CRC16.Calculator
-import           Data.Bimap                        (Bimap, empty, insert)
-import           Data.Binary                       (Binary, Get, decode, encode,
-                                                    get, put)
-import           Data.Binary.Get                   (getLazyByteString, getWord8,
-                                                    getWord32le, runGet)
-import           Data.Binary.Put                   (putByteString,
-                                                    putLazyByteString, putWord8,
-                                                    runPut)
-import qualified Data.ByteString                   as BS
-import qualified Data.ByteString.Lazy              as LB
-import           Data.Conduit.Network              (appSink, appSource,
-                                                    clientSettings,
-                                                    runTCPClient)
-import           Data.Conduit.Serialization.Binary (sinkGet)
-import           Data.IntMap.Strict                (IntMap, foldrWithKey,
-                                                    fromList, minViewWithKey,
-                                                    singleton, size)
-import           Data.List                         ()
-import           Data.Text                         (Text, unpack)
-import           Data.Text.Encoding                (encodeUtf8)
-import           Data.Word                         (Word8)
+import           Data.Bimap                    (Bimap, empty, insert)
+import           Data.Serialize                (Get, Serialize, decode, encode,
+                                                get, put)
+-- import           Data.Binary                       (Binary, Get, decode, encode,
+--                                                     get, put)
+import           Data.Serialize.Get            (getLazyByteString, getWord32le,
+                                                getWord8, runGet)
+import           Data.Serialize.Put            (putByteString,
+                                                putLazyByteString, putWord8,
+                                                runPut)
+-- import           Data.Binary.Get                   (getLazyByteString, getWord8,
+--                                                     getWord32le, runGet)
+-- import           Data.Binary.Put                   (putByteString,
+--                                                     putLazyByteString, putWord8,
+--                                                    runPut)
+import qualified Data.ByteString               as BS
+-- import qualified Data.ByteString.Lazy              as LB
+import           Data.Conduit.Cereal           (sinkGet)
+import           Data.Conduit.Network          (appSink, appSource,
+                                                clientSettings, runTCPClient)
+import           Data.IntMap.Strict            (IntMap, foldrWithKey, fromList,
+                                                minViewWithKey, singleton, size)
+import           Data.List                     ()
+import           Data.Text                     (Text, unpack)
+import           Data.Text.Encoding            (encodeUtf8)
+import           Data.Word                     (Word8)
 -- import           Protocol.ROC.FullyDefinedPointType
 import           Protocol.ROC.OpCodes
 -- import           Protocol.ROC.PointTypes
 import           Protocol.ROC.ROCConfig
 -- import           Protocol.ROC.RocSerialize
 import           Protocol.ROC.Utils
-import           Roc.Protocol.Types
+import           SingleWell.Roc.Protocol.Types
 import           System.Hardware.Serialport
-import           System.IO.Error                   (tryIOError)
+import           System.IO.Error               (tryIOError)
 
 
 import           Numeric
@@ -90,7 +96,7 @@ requestOpCodeTableData hostAdd modemCfg accessCfg opTable =
   case buildOpTableRequest hostAdd accessCfg opTable of
     Left str -> return.Left $ str
     Right (rocRequest:: RocOpCodeRequest) -> do
-      print $ showInt <$> BS.unpack (LB.toStrict.encode $ rocRequest) <*> [""]
+      print $ showInt <$> BS.unpack (encode $ rocRequest) <*> [""]
       print rocRequest
       let req = sourceLazy $ runPut.put $ rocRequest
           sendRequest server = do
@@ -110,7 +116,7 @@ buildOpTableRequest hostAdd cfg table = (\ dataBytes ->  RocOpCodeRequest {reqRo
       maybeMinKey :: Maybe Word8
       maybeMinKey = fromIntegral . fst . fst <$> (minViewWithKey .  _unOpCodeData . _opCodeData $ table)
       numberOfKeys = fromIntegral . size . _unOpCodeData . _opCodeData $ table
-      eitherDataBytes = case (\ minKey ->  LB.pack [ _unOpCodeTableId . _opCodeTableId $ table, minKey - 1 , numberOfKeys]) <$> maybeMinKey of
+      eitherDataBytes = case (\ minKey ->  BS.pack [ _unOpCodeTableId . _opCodeTableId $ table, minKey - 1 , numberOfKeys]) <$> maybeMinKey of
                           Nothing -> Left "No minkey found in OpCodeData IntMap"
                           Just bs -> Right bs
 
@@ -158,16 +164,16 @@ data OpCodeDataResponse = Opcode10DataResponse { _opCodeTableNumber   :: Word8,
 buildOpCodeGet :: RocOpCodeRespones -> OpCodeNumber -> Get OpCodeDataResponse
 buildOpCodeGet response opNumb =
     case _unOpCodNumber opNumber of
-      10 -> opCode10Get 
+      10 -> opCode10Get
       otherwise -> fail "Opocode Not implemented yet"
 
-opCode10Get :: Get OpCodeDataResponse
-opCode10Get = do
-  tablenumber  <- getWord8
-  startNumber  <- getWord8
-  numberOfVals <- getWord8
-  tableVersion <- getIeeeFloat32
-  databytes    <- getLazyByteString
+-- opCode10Get :: Get OpCodeDataResponse
+-- opCode10Get = do
+--   tablenumber  <- getWord8
+--   startNumber  <- getWord8
+--   numberOfVals <- getWord8
+--   tableVersion <- getIeeeFloat32
+--   databytes    <- getLazyByteString
 
 instance Binary RocOpCodeRequest where
     get = do
