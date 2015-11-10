@@ -27,7 +27,6 @@ Library
                       , bimap
 --                      , binary
                       , cereal
-                      , bytes               >= 0.15.0.1
                       , bytestring          >= 0.10.4.0
 --                      , binary-conduit      >= 0.1.2.3
                       , cereal-conduit

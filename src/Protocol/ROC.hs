@@ -1,6 +1,4 @@
-{-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE OverloadedStrings   #-}
-{-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Protocol.ROC where
@@ -15,7 +13,8 @@ import           Data.Serialize                (Get, Serialize, decode, encode,
 --                                                     get, put)
 import           Data.Serialize.Get            (getByteString, getWord32le,
                                                 getWord8, runGet)
-import           Data.Serialize.Put            (putByteString, putWord8, runPut)
+import           Data.Serialize.IEEE754        (getFloat32le,putFloat32le)
+import           Data.Serialize.Put            (Put, putByteString, putWord8, runPut)
 -- import           Data.Binary.Get                   (getLazyByteString, getWord8,
 --                                                     getWord32le, runGet)
 -- import           Data.Binary.Put                   (putByteString,
@@ -97,8 +96,6 @@ requestOpCodeTableData hostAdd modemCfg accessCfg opTable =
   case buildOpTableRequest hostAdd accessCfg opTable of
     Left str -> return.Left $ str
     Right (rocRequest:: RocOpCodeRequest) -> do
-      print $ showInt <$> BS.unpack (encode $ rocRequest) <*> [""]
-      print rocRequest
       let req = sourceLazy $ BL.fromStrict.runPut.put $ rocRequest
           sendRequest server = do
                           req $$ appSink server
@@ -109,9 +106,9 @@ requestOpCodeTableData hostAdd modemCfg accessCfg opTable =
         Right resp -> return.Right $ resp
 
 buildOpTableRequest :: HostAddress -> RocAccessConfig -> OpCodeTable l -> Either String RocOpCodeRequest
-buildOpTableRequest hostAdd cfg table = (\ dataBytes ->  RocOpCodeRequest {reqRocAddress = RocAdd { rocUnitNumber = _unitNumber cfg, rocGroupNumber = _groupNumber cfg},
+buildOpTableRequest hostAdd cfg table = (\ dataBytes ->  RocOpCodeRequest {reqRocAddress = RocAddress { rocUnitNumber = _unitNumber cfg, rocGroupNumber = _groupNumber cfg},
                                                                            reqHostAddress = HostAddress { hostUnitNumber = hostUnitNumber hostAdd, hostGroupNumber = hostGroupNumber hostAdd},
-                                                                           reqOpCodeNumber = 10 ,
+                                                                           reqOpCodeNumber = OpCodeNumber 10 ,
                                                                            reqDataByteString = dataBytes}) <$> eitherDataBytes
     where
       maybeMinKey :: Maybe Word8
@@ -130,107 +127,138 @@ getRoutine = get
 rocCRC16Config :: CRC16Config
 rocCRC16Config = standardConfig
 
-data RocAdd = RocAdd { rocUnitNumber  :: !Word8,
-                       rocGroupNumber :: !Word8
-                     } deriving (Eq,Show)
+data RocAddress = RocAddress { rocUnitNumber  :: !Word8,
+                               rocGroupNumber :: !Word8
+                             } deriving (Eq,Show)
 
 data HostAddress = HostAddress { hostUnitNumber  :: !Word8,
                                  hostGroupNumber :: !Word8
                                } deriving (Eq,Show)
 
 
-data RocOpCodeResponse = RocOpCodeResponse { respRocAddress     :: RocAdd,
-                                             respHostAddress    :: HostAddress,
-                                             respOpCodeNumber   :: Word8,
-                                             respDataBytesCount :: Word8,
-                                             respDataByteString :: StrictByteString
+data RocOpCodeResponse = RocOpCodeResponse { respRocAddress         :: RocAddress,
+                                             respHostAddress        :: HostAddress,
+                                             respOpCodeNumber       :: OpCodeNumber,
+                                             respDataBytesCount     :: BytesCount,
+                                             respOpCodeDataResponse :: OpCodeDataResponse
                                            } deriving (Eq,Show)
 
-data RocOpCodeRequest = RocOpCodeRequest { reqRocAddress     :: RocAdd,
+data RocOpCodeRequest = RocOpCodeRequest { reqRocAddress     :: RocAddress,
                                            reqHostAddress    :: HostAddress,
-                                           reqOpCodeNumber   :: Word8,
+                                           reqOpCodeNumber   :: OpCodeNumber,
                                            reqDataByteString :: StrictByteString
                                          } deriving (Eq,Show)
 
 
--- newtype OpCodeNumber = OpCodeNumber { _unOpCodeNumber :: Word8 }
---     deriving (Eq,Show)
-
-data OpCodeDataResponse = Opcode10DataResponse { _opCodeTableNumber   :: Word8,
+data OpCodeDataResponse = OpCode10DataResponse { _opCodeTableNumber   :: Word8,
                                                  _tableStartingNumber :: Word8,
                                                  _numberOfTableValues :: Word8,
                                                  _tableVersionNumber  :: Float,
-                                                 _opCode10DataBytes   :: StrictByteString}
+                                                 _opCode10DataBytes   :: StrictByteString
+                                               } 
+                        | OpCode255DataResponse { _errorCode :: Word8, _errorOpCode :: OpCodeNumber, _errorByte :: Word8}
+                          deriving (Eq,Show)
+                        
 
--- buildOpCodeGet :: RocOpCodeResponse -> OpCodeNumber -> Get OpCodeDataResponse
--- buildOpCodeGet response opNumb =
---     case _unOpCodNumber opNumber of
---       10 -> opCode10Get
---       otherwise -> fail "Opocode Not implemented yet"
+newtype OpCodeNumber = OpCodeNumber { _unOpCodeNumber :: Word8} deriving (Eq,Show)
+newtype BytesCount = BytesCount { _unBytesCount :: Word8} deriving (Eq,Show)
 
--- opCode10Get :: Get OpCodeDataResponse
--- opCode10Get = do
---   tablenumber  <- getWord8
---   startNumber  <- getWord8
---   numberOfVals <- getWord8
---   tableVersion <- getIeeeFloat32
---   databytes    <- getLazyByteString
+data RocMessageInfo = RocMessageInfo { unit1  :: Word8,
+                                       group1 :: Word8,
+                                       unit2  :: Word8,
+                                       group2 :: Word8,
+                                       opCode :: OpCodeNumber,
+                                       bCount :: BytesCount,
+                                       dataBS :: StrictByteString
+                                     } deriving (Eq,Show)
+
+getOpCodeDataResponse ::  OpCodeNumber -> BytesCount -> Get OpCodeDataResponse
+getOpCodeDataResponse opNumber count =
+    case _unOpCodeNumber opNumber of
+      10 -> opCode10Get count 
+      otherwise -> fail "Opocode Not implemented yet"
+
+putOpCodeDataResponse :: OpCodeDataResponse -> Put
+putOpCodeDataResponse (OpCode10DataResponse table idx count version bs) = 
+  putWord8 table >> putWord8 idx >> putWord8 count >> putFloat32le version >> putByteString bs
+putOpCodeDataResponse (OpCode255DataResponse code opcode byte) = putWord8 code >> putWord8 (_unOpCodeNumber opcode) >> putWord8 byte
+putOpCodeDataResponse (something) = fail (show something ++ " not implemented yet")
+
+opCode10Get :: BytesCount -> Get OpCodeDataResponse
+opCode10Get count = do
+  tableNumber  <- getWord8
+  startNumber  <- getWord8
+  numberOfVals <- getWord8
+  tableVersion <- getFloat32le
+  databytes    <- getByteString (fromIntegral $ _unBytesCount count - 7)
+  return OpCode10DataResponse {_opCodeTableNumber   = tableNumber,
+                               _tableStartingNumber = startNumber,
+                               _numberOfTableValues = numberOfVals,
+                               _tableVersionNumber  = tableVersion,
+                               _opCode10DataBytes   = databytes}
 
 instance Serialize RocOpCodeRequest where
     get = do
-      rocUnit           <- getWord8
-      rocGroup          <- getWord8
-      hostUnit          <- getWord8
-      hostGroup         <- getWord8
-      opCode            <- getWord8
-      numberOfDataBytes <- getWord8
-      dataByteString    <- getByteString (2 + fromIntegral numberOfDataBytes)
-      let repackBytes = BS.pack [rocUnit,rocGroup,hostUnit,hostGroup,opCode,numberOfDataBytes]
-      if checkCRC16 (IStrictBS $ BS.append repackBytes dataByteString) rocCRC16Config
-      then return RocOpCodeRequest { reqRocAddress = RocAdd { rocUnitNumber = rocUnit, rocGroupNumber = rocGroup},
-                                     reqHostAddress = HostAddress { hostUnitNumber = hostUnit, hostGroupNumber = hostGroup},
-                                     reqOpCodeNumber =  opCode,
-                                     reqDataByteString = BS.take (fromIntegral numberOfDataBytes) dataByteString}
-      else fail "CRC check faild"
+      info <- getRocMessageInfo
+      return RocOpCodeRequest { reqRocAddress     = RocAddress { rocUnitNumber = unit1 info, rocGroupNumber = group1 info},
+                                reqHostAddress    = HostAddress { hostUnitNumber = unit2 info, hostGroupNumber = group2 info},
+                                reqOpCodeNumber   = opCode info,
+                                reqDataByteString = dataBS info }
 
-    put request = putByteString $ appendCRC16 (IStrictBS $ runPut putHeader) rocCRC16Config
+    put request = putByteString $ appendCRC16 (IStrictBS $ runPut putRequest) rocCRC16Config
         where
-          putHeader = do
-            putWord8 . rocUnitNumber. reqRocAddress $ request
-            putWord8 . rocGroupNumber . reqRocAddress $ request
-            putWord8 . hostUnitNumber . reqHostAddress $ request
+          putRequest = do
+            putWord8 . rocUnitNumber   . reqRocAddress $ request
+            putWord8 . rocGroupNumber  . reqRocAddress $ request
+            putWord8 . hostUnitNumber  . reqHostAddress $ request
             putWord8 . hostGroupNumber . reqHostAddress $ request
-            putWord8 . reqOpCodeNumber $ request
+            putWord8 . _unOpCodeNumber . reqOpCodeNumber $ request
             putWord8 . fromIntegral . BS.length . reqDataByteString $ request
             putByteString . reqDataByteString $ request
 
 instance Serialize RocOpCodeResponse where
     get = do
-      hostUnit          <- getWord8
-      hostGroup         <- getWord8
-      rocUnit           <- getWord8
-      rocGroup          <- getWord8
-      opCode            <- getWord8
-      numberOfDataBytes <- getWord8
-      dataByteString    <- getByteString (2 + fromIntegral numberOfDataBytes)
-      let repackBytes = BS.pack [hostUnit,hostGroup,rocUnit,rocGroup,opCode,numberOfDataBytes]
-      if checkCRC16 (IStrictBS $ BS.append repackBytes dataByteString) rocCRC16Config
-      then return RocOpCodeResponse { respRocAddress = RocAdd { rocUnitNumber = rocUnit, rocGroupNumber = rocGroup},
-                                      respHostAddress = HostAddress { hostUnitNumber = hostUnit, hostGroupNumber = hostGroup},
-                                      respOpCodeNumber = opCode,
-                                      respDataBytesCount = numberOfDataBytes,
-                                      respDataByteString = BS.take (fromIntegral numberOfDataBytes) dataByteString}
+      info <- getRocMessageInfo
+      case runGet (getOpCodeDataResponse (opCode info) (bCount info)) $ dataBS info of
+            Left err -> fail err
+            Right resp -> return RocOpCodeResponse { respRocAddress         = RocAddress { rocUnitNumber = unit2 info, rocGroupNumber = group2 info},
+                                                     respHostAddress        = HostAddress { hostUnitNumber = unit1 info , hostGroupNumber = group2 info},
+                                                     respOpCodeNumber       = opCode info,
+                                                     respDataBytesCount     = bCount info,
+                                                     respOpCodeDataResponse = resp}
 
-      else fail "CRC check failed"
-    put response = do
-      putWord8 $ hostUnitNumber . respHostAddress $ response
-      putWord8 $ hostGroupNumber . respHostAddress $ response
-      putWord8 $ rocUnitNumber . respRocAddress $ response
-      putWord8 $ rocGroupNumber . respRocAddress $ response
-      putWord8 $ respOpCodeNumber response
-      putWord8 $ respDataBytesCount response
-      putByteString $ respDataByteString response
+    put response = putByteString $ appendCRC16 (IStrictBS $ runPut putResponse) rocCRC16Config
+        where 
+          putResponse = do
+            putWord8 $ hostUnitNumber  . respHostAddress $ response
+            putWord8 $ hostGroupNumber . respHostAddress $ response
+            putWord8 $ rocUnitNumber   . respRocAddress $ response
+            putWord8 $ rocGroupNumber  . respRocAddress $ response
+            putWord8 $ _unOpCodeNumber . respOpCodeNumber $ response
+            putWord8 $ _unBytesCount   . respDataBytesCount $ response
+            putOpCodeDataResponse $ respOpCodeDataResponse response
 
+
+getRocMessageInfo :: Get RocMessageInfo
+getRocMessageInfo = do
+  unitNumber1  <- getWord8
+  groupNumber1 <- getWord8
+  unitNumber2  <- getWord8
+  groupNumber2 <- getWord8
+  opCodeNumber <- getWord8
+  bytesCount   <- getWord8
+  dataByteStr  <- getByteString $ fromIntegral bytesCount
+  crc          <- getByteString 2
+  let repackBytes = BS.pack [unitNumber1,groupNumber1,unitNumber2,groupNumber2,opCodeNumber,bytesCount]
+  if checkCRC16 (IStrictBS $ BS.append repackBytes $ BS.append dataByteStr crc) rocCRC16Config
+  then return RocMessageInfo {unit1  = unitNumber1,
+                              group1 = groupNumber1,
+                              unit2  = unitNumber2,
+                              group2 = groupNumber2,
+                              opCode = OpCodeNumber opCodeNumber,
+                              bCount = BytesCount bytesCount,
+                              dataBS = dataByteStr}
+  else fail "CRC check failed"
 
 ----------------------------- Testing Stuff -----------------------------------------------
 
@@ -244,14 +272,14 @@ testQuery = do
          Right response -> do
              print response
              let opCodeTableGet = buildOpCodeTableGet opCodeTable
-                 result = runGet opCodeTableGet (respDataByteString response)
+                 result = runGet opCodeTableGet (_opCode10DataBytes . respOpCodeDataResponse $ response)
              return  result
 
 testHostAddress :: HostAddress
 testHostAddress = HostAddress 1 3
 
 testRocOpCodeRequest :: RocOpCodeRequest
-testRocOpCodeRequest = RocOpCodeRequest (RocAdd 240 240) (HostAddress 1 3) 10 $ BS.pack [0,0,44]
+testRocOpCodeRequest = RocOpCodeRequest (RocAddress 240 240) (HostAddress 1 3) (OpCodeNumber 10) $ BS.pack [0,0,44]
 
 testRocOpCodeRequestByteString :: StrictByteString
 testRocOpCodeRequestByteString = "\240\240\SOH\ETX\n\ETX\NUL\NUL\ETX\195\247"
