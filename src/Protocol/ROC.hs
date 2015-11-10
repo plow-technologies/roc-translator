@@ -3,92 +3,24 @@
 
 module Protocol.ROC where
 import           Conduit                       (sourceLazy, ($$))
-import           Control.Monad
 import           CRC16.Calculator
-import           Data.Bimap                    (Bimap, empty, insert)
 import qualified Data.ByteString.Lazy          as BL
-import           Data.Serialize                (Get, Serialize, decode, encode,
-                                                get, put)
--- import           Data.Binary                       (Binary, Get, decode, encode,
---                                                     get, put)
-import           Data.Serialize.Get            (getByteString, getWord32le,
-                                                getWord8, runGet)
+import           Data.Serialize                (Get, Serialize, get, put)
+import           Data.Serialize.Get            (getByteString, getWord8, runGet)
 import           Data.Serialize.IEEE754        (getFloat32le,putFloat32le)
 import           Data.Serialize.Put            (Put, putByteString, putWord8, runPut)
--- import           Data.Binary.Get                   (getLazyByteString, getWord8,
---                                                     getWord32le, runGet)
--- import           Data.Binary.Put                   (putByteString,
---                                                     putLazyByteString, putWord8,
---                                                    runPut)
 import qualified Data.ByteString               as BS
--- import qualified Data.ByteString.Lazy              as LB
 import           Data.Conduit.Cereal           (sinkGet)
 import           Data.Conduit.Network          (appSink, appSource,
                                                 clientSettings, runTCPClient)
-import           Data.IntMap.Strict            (IntMap, foldrWithKey, fromList,
-                                                minViewWithKey, singleton, size)
-import           Data.List                     ()
+import           Data.IntMap.Strict            (minViewWithKey, size)
 import           Data.Text                     (Text, unpack)
 import           Data.Text.Encoding            (encodeUtf8)
 import           Data.Word                     (Word8)
--- import           Protocol.ROC.FullyDefinedPointType
--- import           Protocol.ROC.OpCodes
--- import           Protocol.ROC.PointTypes
--- import           Protocol.ROC.ROCConfig
--- import           Protocol.ROC.RocSerialize
--- import           Protocol.ROC.Utils
 import           SingleWell.Roc.Protocol.Types
-import           System.Hardware.Serialport
 import           System.IO.Error               (tryIOError)
 
-
-import           Numeric
-
 type StrictByteString = BS.ByteString
-
--- | getPointType is designed for retrieving and entire PointType for serial comms only
-
--- getPointType :: RocConfig -> DefaultPointType -> PointNumber -> IO ()
--- getPointType cfg fdpt pn = do
---   let fdataBytes = fdptRxProtocol fdpt
---       ptid = fdptPointTypeID fdpt
---       pc = fdptParameterCount fdpt
---       sp = fdptStartParameter fdpt
---   dataBytes <- fdataBytes cfg pn ptid pc sp
---   let fetchedPointType = fetchPointType ptid (BS.fromStrict dataBytes)
---   print fetchedPointType
-
--- | writePointType is designed to write to a specific field in a PointType for serial comms only
-
--- writePointType :: RocSerialize a => RocConfig -> DefaultPointType -> PointNumber -> ParameterNumber -> a -> IO ()
--- writePointType cfg fdpt pn prn pdata = do
---   let port = rocConfigPort cfg
---       commRate = rocCommSpeed cfg
---       ptid = fdptPointTypeID fdpt
---       pt = decodePTID ptid
---       databytes = BS.append (opCode166 pt pn prn pdata cfg) (lzyBSto16BScrc.pack8to16 $ BS.unpack $ opCode166 pt pn prn pdata cfg)
---   s <- openSerial port defaultSerialSettings { commSpeed = commRate }
---   print $ showInt <$> BS.unpack databytes <*> [""]
---   _ <- send s databytes
---   receivebs <- recvAllBytes s 255
---   closeSerial s
---   print $ showInt <$> BS.unpack receivebs <*> [""]
-
-
--- | runOpCodeRaw is designed for running an opcode on the roc
-
--- runOpCodeRaw :: RocConfig -> (RocConfig -> BS.ByteString) -> IO BS.ByteString
--- runOpCodeRaw cfg opCode = do
---   let port = rocConfigPort cfg
---       commRate = rocCommSpeed cfg
---       bs = BS.append (opCode cfg) (lzyBSto16BScrc.pack8to16 $ BS.unpack $ opCode cfg)
---   s <- openSerial port defaultSerialSettings { commSpeed = commRate }
---   _ <- send s $ bs
---   receivebs <- recvAllBytes s 255
---   closeSerial s
---   print $ showInt <$> BS.unpack bs <*> [""]
---   print $ showInt <$> BS.unpack receivebs <*> [""]
---   return receivebs
 
 
 requestOpCodeTableData :: HostAddress -> ModemConfig -> RocAccessConfig -> OpCodeTable l -> IO (Either String RocOpCodeResponse)
@@ -106,9 +38,9 @@ requestOpCodeTableData hostAdd modemCfg accessCfg opTable =
         Right resp -> return.Right $ resp
 
 buildOpTableRequest :: HostAddress -> RocAccessConfig -> OpCodeTable l -> Either String RocOpCodeRequest
-buildOpTableRequest hostAdd cfg table = (\ dataBytes ->  RocOpCodeRequest {reqRocAddress = RocAddress { rocUnitNumber = _unitNumber cfg, rocGroupNumber = _groupNumber cfg},
-                                                                           reqHostAddress = HostAddress { hostUnitNumber = hostUnitNumber hostAdd, hostGroupNumber = hostGroupNumber hostAdd},
-                                                                           reqOpCodeNumber = OpCodeNumber 10 ,
+buildOpTableRequest hostAdd cfg table = (\ dataBytes ->  RocOpCodeRequest {reqRocAddress     = RocAddress { rocUnitNumber = _unitNumber cfg, rocGroupNumber = _groupNumber cfg},
+                                                                           reqHostAddress    = HostAddress { hostUnitNumber = hostUnitNumber hostAdd, hostGroupNumber = hostGroupNumber hostAdd},
+                                                                           reqOpCodeNumber   = OpCodeNumber 10 ,
                                                                            reqDataByteString = dataBytes}) <$> eitherDataBytes
     where
       maybeMinKey :: Maybe Word8
@@ -175,8 +107,8 @@ data RocMessageInfo = RocMessageInfo { unit1  :: Word8,
 getOpCodeDataResponse ::  OpCodeNumber -> BytesCount -> Get OpCodeDataResponse
 getOpCodeDataResponse opNumber count =
     case _unOpCodeNumber opNumber of
-      10 -> opCode10Get count 
-      otherwise -> fail "Opocode Not implemented yet"
+      10 -> opCode10Get count
+      _ -> fail "Opocode Not implemented yet"
 
 putOpCodeDataResponse :: OpCodeDataResponse -> Put
 putOpCodeDataResponse (OpCode10DataResponse table idx count version bs) = 
@@ -263,98 +195,93 @@ getRocMessageInfo = do
 ----------------------------- Testing Stuff -----------------------------------------------
 
 
-testQuery :: IO (Either String (OpCodeTable TlpDataResponse))
-testQuery = do
-  let eitherOpCodeTable@(Right opCodeTable) = makeOpCodeTable
-  doubleEither <- requestOpCodeTableData testHostAddress testModemConfig testRocAccessConfig `traverse` eitherOpCodeTable
-  case join doubleEither of
-         Left s -> return . Left $ s
-         Right response -> do
-             print response
-             let opCodeTableGet = buildOpCodeTableGet opCodeTable
-                 result = runGet opCodeTableGet (_opCode10DataBytes . respOpCodeDataResponse $ response)
-             return  result
+-- testQuery :: ModemConfig -> IO (Either String (OpCodeTable TlpDataResponse))
+-- testQuery mcfg = do
+--   let eitherOpCodeTable@(Right opCodeTable) = makeOpCodeTable
+--   doubleEither <- requestOpCodeTableData testHostAddress mcfg testRocAccessConfig `traverse` eitherOpCodeTable
+--   case join doubleEither of
+--          Left s -> return . Left $ s
+--          Right response -> do
+--              let opCodeTableGet = buildOpCodeTableGet opCodeTable
+--                  result = runGet opCodeTableGet (_opCode10DataBytes . respOpCodeDataResponse $ response)
+--              return  result
 
-testHostAddress :: HostAddress
-testHostAddress = HostAddress 1 3
+-- testHostAddress :: HostAddress
+-- testHostAddress = HostAddress 1 3
 
-testRocOpCodeRequest :: RocOpCodeRequest
-testRocOpCodeRequest = RocOpCodeRequest (RocAddress 240 240) (HostAddress 1 3) (OpCodeNumber 10) $ BS.pack [0,0,44]
+-- testRocOpCodeRequest :: RocOpCodeRequest
+-- testRocOpCodeRequest = RocOpCodeRequest (RocAddress 240 240) (HostAddress 1 3) (OpCodeNumber 10) $ BS.pack [0,0,44]
 
-testRocOpCodeRequestByteString :: StrictByteString
-testRocOpCodeRequestByteString = "\240\240\SOH\ETX\n\ETX\NUL\NUL\ETX\195\247"
+-- testRocOpCodeRequestByteString :: StrictByteString
+-- testRocOpCodeRequestByteString = "\240\240\SOH\ETX\n\ETX\NUL\NUL\ETX\195\247"
+
+-- testRocAccessConfig :: RocAccessConfig
+-- testRocAccessConfig = RocAccessConfig 10 2 "LOI" 1000
 
 
--- OLD
--- testRocConfig :: RocConfig
--- testRocConfig = RocConfig "/dev/ttyUSB0" [240,240] [1,3] CS19200 "LOI" 1000
+-- testModemConfig1 :: ModemConfig
+-- testModemConfig1 = ModemConfig "url" 20090
 
-testRocAccessConfig :: RocAccessConfig
-testRocAccessConfig = RocAccessConfig 240 240 "LOI" 1000
+-- makeOpCodeTable :: Either String (OpCodeTable TlpDataRequest)
+-- makeOpCodeTable = case (\ opTable -> OpCodeTable (OpCodeTableId 0) opTable makeBimap) <$> makeDataMap of
+--                     Left txt -> Left $ unpack txt
+--                     Right bs -> Right bs
 
-testModemConfig :: ModemConfig
-testModemConfig = ModemConfig "166.131.38.15" 20090
+-- makeBimap :: Bimap Int OnPingId
+-- makeBimap = foldrWithKey bimapFcn empty myDataMap
+--     where
+--       bimapFcn k _ = insert k (OnPingId k)
 
-makeOpCodeTable :: Either String (OpCodeTable TlpDataRequest)
-makeOpCodeTable = case (\ opTable -> OpCodeTable (OpCodeTableId 0) opTable makeBimap) <$> makeDataMap of
-                    Left txt -> Left $ unpack txt
-                    Right bs -> Right bs
+-- makeDataMap :: Either Text (OpCodeData TlpDataRequest)
+-- makeDataMap = makeOpCodeData myDataMap
 
-makeBimap :: Bimap Int OnPingId
-makeBimap = foldrWithKey bimapFcn empty myDataMap
-    where
-      bimapFcn k _ = insert k (OnPingId k)
-
-makeDataMap :: Either Text (OpCodeData TlpDataRequest)
-makeDataMap = makeOpCodeData myDataMap
-
-myDataMap :: IntMap TlpDataRequest
-myDataMap = TlpDataRequest <$> simpleIntMap
-  where
-    simpleIntMap = fromList [( 1  , TlpUnsignedInt8 (Left ())),
-                             ( 2  , TlpUndefined32 (Left ())),
-                             ( 3  , TlpUnsignedInt8 (Left ())),
-                             ( 4  , TlpFloat (Left ())),
-                             ( 5  , TlpFloat (Left ())),
-                             ( 6  , TlpFloat (Left ())),
-                             ( 7  , TlpUnsignedInt8 (Left ())),
-                             ( 8  , TlpFloat (Left ())),
-                             ( 9  , TlpFloat (Left ())),
-                             ( 10 , TlpFloat (Left ())),
-                             ( 11 , TlpFloat (Left ())),
-                             ( 12 , TlpFloat (Left ())),
-                             ( 13 , TlpFloat (Left ())),
-                             ( 14 , TlpInt16 (Left ())),
-                             ( 15 , TlpInt16 (Left ())),
-                             ( 16 , TlpFloat (Left ())),
-                             ( 17 , TlpFloat (Left ())),
-                             ( 18 , TlpFloat (Left ())),
-                             ( 19 , TlpInt16 (Left ())),
-                             ( 20 , TlpFloat (Left ())),
-                             ( 21 , TlpInt16 (Left ())),
-                             ( 22 , TlpFloat (Left ())),
-                             ( 23 , TlpFloat (Left ())),
-                             ( 24 , TlpFloat (Left ())),
-                             ( 25 , TlpFloat (Left ())),
-                             ( 26 , TlpInt16 (Left ())),
-                             ( 27 , TlpFloat (Left ())),
-                             ( 28 , TlpFloat (Left ())),
-                             ( 29 , TlpFloat (Left ())),
-                             ( 30 , TlpFloat (Left ())),
-                             ( 31 , TlpFloat (Left ())),
-                             ( 32 , TlpFloat (Left ())),
-                             ( 33 , TlpFloat (Left ())),
-                             ( 34 , TlpFloat (Left ())),
-                             ( 35 , TlpFloat (Left ())),
-                             ( 36 , TlpFloat (Left ())),
-                             ( 37 , TlpFloat (Left ())),
-                             ( 38 , TlpFloat (Left ())),
-                             ( 39 , TlpFloat (Left ())),
-                             ( 40 , TlpFloat (Left ())),
-                             ( 41 , TlpFloat (Left ())),
-                             ( 42 , TlpFloat (Left ())),
-                             ( 43 , TlpFloat (Left ())),
-                             ( 44 , TlpFloat (Left ()))]
+-- myDataMap :: IntMap TlpDataRequest
+-- myDataMap = TlpDataRequest <$> simpleIntMap
+--   where
+--     simpleIntMap = fromList [( 1  , TlpFloat (Left ())),
+--                              ( 2  , TlpFloat (Left ())),
+--                              ( 3  , TlpFloat (Left ())),
+--                              ( 4  , TlpFloat (Left ())),
+--                              ( 5  , TlpFloat (Left ())),
+--                              ( 6  , TlpFloat (Left ())),
+--                              ( 7  , TlpFloat (Left ())),
+--                              ( 8  , TlpFloat (Left ())),
+--                              ( 9  , TlpFloat (Left ())),
+--                              ( 10 , TlpFloat (Left ())),
+--                              ( 11 , TlpFloat (Left ())),
+--                              ( 12 , TlpFloat (Left ())),
+--                              ( 13 , TlpFloat (Left ())),
+--                              ( 14 , TlpFloat (Left ())),
+--                              ( 15 , TlpFloat (Left ())),
+--                              ( 16 , TlpFloat (Left ())),
+--                              ( 17 , TlpFloat (Left ())),
+--                              ( 18 , TlpFloat (Left ())),
+--                              ( 19 , TlpFloat (Left ())),
+--                              ( 20 , TlpFloat (Left ())),
+--                              ( 21 , TlpFloat (Left ())),
+--                              ( 22 , TlpFloat (Left ())),
+--                              ( 23 , TlpFloat (Left ())),
+--                              ( 24 , TlpFloat (Left ())),
+--                              ( 25 , TlpFloat (Left ())),
+--                              ( 26 , TlpFloat (Left ())),
+--                              ( 27 , TlpFloat (Left ())),
+--                              ( 28 , TlpFloat (Left ())),
+--                              ( 29 , TlpFloat (Left ())),
+--                              ( 30 , TlpUnsignedInt8 (Left ())),
+--                              ( 31 , TlpUnsignedInt8 (Left ())),
+--                              ( 32 , TlpUnsignedInt8 (Left ())),
+--                              ( 33 , TlpUnsignedInt8 (Left ())),
+--                              ( 34 , TlpUnsignedInt8 (Left ())),
+--                              ( 35 , TlpUnsignedInt8 (Left ())),
+--                              ( 36 , TlpUnsignedInt8 (Left ())),
+--                              ( 37 , TlpFloat (Left ())),
+--                              ( 38 , TlpFloat (Left ())),
+--                              ( 39 , TlpFloat (Left ())),
+--                              ( 40 , TlpFloat (Left ())),
+--                              ( 41 , TlpFloat (Left ())),
+--                              ( 42 , TlpUnsignedInt8 (Left ())),
+--                              ( 43 , TlpUnsignedInt8 (Left ())),
+--                              ( 44 , TlpFloat (Left ()))]
 
 -- testingEncode :: IO ()
 -- testingEncode = do
@@ -364,9 +291,9 @@ myDataMap = TlpDataRequest <$> simpleIntMap
 --     then print ("Successfully encoded RocOpCodeRequest" :: String)
 --     else print ("Failed to encode RopOpCodeRequest" :: String)
 
-testingDecodingByteString :: IO ()
-testingDecodingByteString =
-    if (Right testRocOpCodeRequest)  == (decode testRocOpCodeRequestByteString :: Either String RocOpCodeRequest)
-    then print ("Successfully decoded RocOpCodeRequest" :: String)
-    else print ("Failed to decode RocOpCodeRequest" :: String)
+-- testingDecodingByteString :: IO ()
+-- testingDecodingByteString =
+--     if (Right testRocOpCodeRequest)  == (decode testRocOpCodeRequestByteString :: Either String RocOpCodeRequest)
+--     then print ("Successfully decoded RocOpCodeRequest" :: String)
+--     else print ("Failed to decode RocOpCodeRequest" :: String)
 
