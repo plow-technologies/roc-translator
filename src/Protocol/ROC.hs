@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE RankNTypes, OverloadedStrings #-}
 module Protocol.ROC where
 
@@ -5,45 +7,25 @@ import System.Hardware.Serialport
 import CRC16.Calculator
 import Data.Serialize
 import qualified Data.ByteString as BS
-import Control.Monad
---import qualified Data.ByteString.Lazy as LB
---import Protocol.ROC.Utils
---import Protocol.ROC.PointTypes
---import Protocol.ROC.FullyDefinedPointType 
 import Protocol.ROC.ROCConfig
 import Protocol.ROC.OpCodes
---import Protocol.ROC.RocSerialize
--- import Control.Applicative
-import Numeric                                            
--- import Data.Int
--- import Data.ByteString.Builder
 import Data.Word
+import Data.Int
 
--- getPointType :: RocConfig -> DefaultPointType -> PointNumber -> IO ()
--- getPointType cfg fdpt pn = do
---   let fdataBytes = fdptRxProtocol fdpt
---       ptid = fdptPointTypeID fdpt
---       pc = fdptParameterCount fdpt
---       sp = fdptStartParameter fdpt
---   dataBytes <- fdataBytes cfg pn ptid pc sp    
---   let fetchedPointType = fetchPointType ptid (LB.fromStrict dataBytes)
---   print fetchedPointType
 
--- writePointType :: RocSerialize a => RocConfig -> DefaultPointType -> PointNumber -> ParameterNumber -> a -> IO ()
--- writePointType cfg fdpt pn prn pdata = do
---   let port = rocConfigPort cfg
---       commRate = rocCommSpeed cfg
---       ptid = fdptPointTypeID fdpt
---       pt = decodePTID ptid
---       databytes = BS.append (opCode166 pt pn prn pdata cfg) (lzyBSto16BScrc.pack8to16 $ BS.unpack $ opCode166 pt pn prn pdata cfg)
---   s <- openSerial port defaultSerialSettings { commSpeed = commRate } 
---   print $ showInt <$> BS.unpack databytes <*> [""]
---   _ <- send s databytes
---   receivebs <- recvAllBytes s 255
---   closeSerial s
---   print $ showInt <$> BS.unpack receivebs <*> [""]
+----------------- Default Configuration to talk to the ROC -------------------------------
+--------- The RocAddress [240,240] is a generic address that lets us talk to any ROC.
+--------- The RocAddress [1,3] is random and it is for designating us a a host.
 
-loginToROC :: String -> Word16 ->  IO (Either String Float)
+testRocConfig :: RocConfig
+testRocConfig = RocConfig "/dev/ttyUSB0" [240,240] [1,3] CS19200 "LOI" 1000
+                
+-----------------------------------------------------------------------------------------
+    
+----------------- Completely Defined Functions for Poll/Login --------------------------------
+
+------------------ If you get a security error run this --------------
+loginToROC :: String -> Word16 -> IO (Either String String)
 loginToROC userName passWrd = do
   responsebytes <- runOpCodeRaw (testRocConfig{rocLogin = userName, rocPassword = passWrd}) opCode17
   if checkCRC16 (IStrictBS responsebytes) standardConfig
@@ -52,6 +34,10 @@ loginToROC userName passWrd = do
          Right responseinfo -> return $ parseResponseInfo responseinfo
   else return $ Left "CRC check failed"
 
+---------------------------------------------------------------------
+
+------------------ These will get you specific data points ----------
+       
 getMinutesToday :: IO (Either String Float)
 getMinutesToday = runGetDataPoint 47 0 41
 
@@ -75,19 +61,26 @@ getFlowRatePerDay = runGetDataPoint 47 0 0
 
 getEnergyRatePerDay :: IO (Either String Float)
 getEnergyRatePerDay = runGetDataPoint 47 0 1
-                   
+-----------------------------------------------------------------------------------------------
 
-runGetDataPoint :: PointType -> PointNumber -> ParameterNumber -> IO (Either String Float)
+
+-------------------------- General Function for getting data from ROC -------------------------
+
+---- PointType = Word8 and is associated with things like Discrete Outputs, Analog Inputs, Meter Flow Values, etc.
+---- PointNumber = Word8 and (also called Logical Number) is associated with which PointType you wish to talk like Analog Input 1, AnalogInput 2, Analog Input 3, etc. (it is 0 based so Analog Input 1 = Word8 0
+-- ParameterNumber = Word8 and is associated with which parameter you wish to retrieve from the PointType and PointNumber
+runGetDataPoint :: RocType a => PointType -> PointNumber -> ParameterNumber -> IO (Either String a)
 runGetDataPoint pointtype pointnumber parameternumber = do
   responsebytes <- runOpCodeRaw testRocConfig (opCode167 pointtype pointnumber 1 parameternumber)
   if checkCRC16 (IStrictBS responsebytes) standardConfig
   then case runGet parseResponse responsebytes of
          Left err -> return $ Left err
-         Right responseinfo -> do
-           print $ showHex <$> BS.unpack (dataByteString responseinfo) <*> [""]
-           return $ parseResponseInfo responseinfo
+         Right responseinfo -> return $ parseResponseInfo responseinfo
   else return $ Left "CRC check failed"
-                   
+
+
+-------------- Parser to get to the Opcode to decide how to proceed ----------
+ 
 parseResponse :: Get ResponseInfo
 parseResponse = do
   responseLocalHostUnitId <- getWord8
@@ -105,13 +98,27 @@ parseResponse = do
                         responseOpcodeId
                         responseDataBytes
 
-parseResponseInfo :: ResponseInfo -> Either String Float
-parseResponseInfo (ResponseInfo _ _ _ _ 167 databytes) = runGet parseOutFloat databytes
-parseResponseInfo (ResponseInfo _ _ _ _ 17  databytes) = Left "Login Successful" 
+data ResponseInfo = ResponseInfo { hostUnitId     :: Word8
+                                 , hostGroupId    :: Word8
+                                 , deviceUnitId   :: Word8
+                                 , deviceGroupId  :: Word8
+                                 , opcodeId       :: Word8
+                                 , dataByteString :: BS.ByteString
+                                 } deriving (Eq,Ord,Show)
+                        
+-------------------- Now that the Opcode has been parsed we can parse accordingly ------------------
+                        
+parseResponseInfo :: RocType a => ResponseInfo -> Either String a
+parseResponseInfo (ResponseInfo _ _ _ _ 167 databytes) = runGet parse167 databytes
+parseResponseInfo (ResponseInfo _ _ _ _ 17  _) = runGet parse17 "Login Successful"
 parseResponseInfo (ResponseInfo _ _ _ _ 255 databytes) = runGet parseError databytes
 parseResponseInfo response = Left $ "Unknown Response " ++ show response
 
-parseError :: Get Float
+--------------------------------------------------------------------------------------------------
+                             
+---------------- For errors from the device------------------------
+                             
+parseError :: Get a
 parseError = do
   errorcode <- getWord8
   opcodeWithError <- getWord8
@@ -145,23 +152,64 @@ parseError = do
      63 -> fail $ "Requested security level too hight" ++ errorInfo
      _ -> fail $ "Unknown error" ++ errorInfo
 
--- class (RocGet a) => RocType a where
+----------------------------------------------------------------------
 
--- class RocGet a where
-    
+------------ Where the magic happens so that we can read any value (almost) -----------------
+          
+class (RocGet a) => RocType a where
 
--- data Response a = Response {responseValue :: a} deriving (Show,Eq,Ord)
-          
-parseOutFloat :: Get Float
-parseOutFloat = do
-  pointtype <- getWord8
-  pointnumber <- getWord8
-  parametercount <- getWord8
-  parameterStart <- getWord8
-  dataFloat <- getFloat32le
-  remainderFloats <- replicateM (fromIntegral parametercount - 1) getFloat32le
-  return dataFloat
-          
+class RocGet a where
+    rocget :: Get a
+
+instance RocType Float
+instance RocGet Float where
+    rocget = getFloat32le
+
+instance RocType Word8
+instance RocGet Word8 where
+    rocget = getWord8
+
+instance RocType Word16
+instance RocGet Word16 where
+    rocget = getWord16le
+
+instance RocType Word32
+instance RocGet Word32 where
+    rocget = getWord32le
+
+instance RocType Int8
+instance RocGet Int8 where
+    rocget = getInt8
+
+instance RocType Int16
+instance RocGet Int16 where
+    rocget = getInt16le
+
+instance RocType Int32
+instance RocGet Int32 where
+    rocget = getInt32le
+
+instance RocType String
+instance RocGet String where
+    rocget = do
+      bs <- getByteString 16
+      return $ show bs
+
+         
+
+--------------------------------------------------------------------------------------------------
+
+----------------------------- Opcode parsers ---------------------------------------------------
+parse167 :: RocType a =>  Get a
+parse167 = do
+  skip 4
+  rocget
+
+parse17 :: RocType a => Get a
+parse17 = rocget
+-------------------------------------------------------------------------------------------------
+
+-------------------------- Sending and Receiving the ByteStrings ----------------------------
 runOpCodeRaw :: RocConfig -> (RocConfig -> BS.ByteString) -> IO BS.ByteString
 runOpCodeRaw cfg opCode = do
   let port = rocConfigPort cfg
@@ -170,18 +218,7 @@ runOpCodeRaw cfg opCode = do
   _ <- send s $ appendCRC16 (IStrictBS $ opCode cfg) standardConfig
   receivebs <- recvAllBytes s 255
   closeSerial s
-  print $ showHex <$> BS.unpack receivebs <*> [""]
   return receivebs
-         
-data ResponseInfo = ResponseInfo { hostUnitId     :: Word8
-                                 , hostGroupId    :: Word8
-                                 , deviceUnitId   :: Word8
-                                 , deviceGroupId  :: Word8
-                                 , opcodeId       :: Word8
-                                 , dataByteString :: BS.ByteString
-                                 } deriving (Eq,Ord,Show)
-                                   
-testRocConfig :: RocConfig
-testRocConfig = RocConfig "/dev/ttyUSB0" [240,240] [1,3] CS19200 "LOI" 1000
+---------------------------------------------------------------------------------------------                                   
 
 

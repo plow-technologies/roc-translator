@@ -15,11 +15,7 @@ Library
   GHC-Options:          -Wall
   Exposed-Modules:      Protocol.ROC
                         Protocol.ROC.OpCodes
-                        -- Protocol.ROC.PointTypes
-                        -- Protocol.ROC.Float
-                        -- Protocol.ROC.Utils
-                        -- Protocol.ROC.FullyDefinedPointType
-                        -- Protocol.ROC.RocSerialize                       
+                        Protocol.ROC.ROCConfig                
 
   Other-Modules:        Protocol.ROC.Internal
 

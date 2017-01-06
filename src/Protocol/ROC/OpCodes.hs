@@ -7,7 +7,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LB
 import Data.ByteString.Builder
 import System.Hardware.Serialport
-import Control.Applicative
 --import Protocol.ROC.RocSerialize
       
 -- opCode0 :: BlockNumber -> RocConfig -> BS.ByteString
