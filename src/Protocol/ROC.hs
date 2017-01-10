@@ -25,8 +25,8 @@ testRocConfig = RocConfig "/dev/ttyUSB0" [240,240] [1,3] CS19200 "LOI" 1000
 ----------------- Completely Defined Functions for Poll/Login --------------------------------
 
 ------------------ If you get a security error run this --------------
-loginToROC :: String -> Word16 -> RocConfig -> IO (Either String String)
-loginToROC userName passWrd cfg = do
+loginToROC :: RocConfig -> IO (Either String String)
+loginToROC cfg = do
   responsebytes <- runOpCodeRaw cfg opCode17
   if checkCRC16 (IStrictBS responsebytes) standardConfig
   then case runGet parseResponse responsebytes of
