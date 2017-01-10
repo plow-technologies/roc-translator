@@ -25,9 +25,9 @@ testRocConfig = RocConfig "/dev/ttyUSB0" [240,240] [1,3] CS19200 "LOI" 1000
 ----------------- Completely Defined Functions for Poll/Login --------------------------------
 
 ------------------ If you get a security error run this --------------
-loginToROC :: String -> Word16 -> IO (Either String String)
-loginToROC userName passWrd = do
-  responsebytes <- runOpCodeRaw (testRocConfig{rocLogin = userName, rocPassword = passWrd}) opCode17
+loginToROC :: String -> Word16 -> RocConfig -> IO (Either String String)
+loginToROC userName passWrd cfg = do
+  responsebytes <- runOpCodeRaw cfg opCode17
   if checkCRC16 (IStrictBS responsebytes) standardConfig
   then case runGet parseResponse responsebytes of
          Left err -> return $ Left err
@@ -38,28 +38,28 @@ loginToROC userName passWrd = do
 
 ------------------ These will get you specific data points ----------
        
-getMinutesToday :: IO (Either String Float)
+getMinutesToday :: RocConfig -> IO (Either String Float)
 getMinutesToday = runGetDataPoint 47 0 41
 
-getHWUncorrectedFlowRate :: IO (Either String Float)
+getHWUncorrectedFlowRate :: RocConfig -> IO (Either String Float)
 getHWUncorrectedFlowRate = runGetDataPoint 46 0 51
 
-getPFStaticPressure :: IO (Either String Float)
+getPFStaticPressure :: RocConfig -> IO (Either String Float)
 getPFStaticPressure = runGetDataPoint 46 0 52
 
-getTFTemperature :: IO (Either String Float)
+getTFTemperature :: RocConfig -> IO (Either String Float)
 getTFTemperature = runGetDataPoint 46 0 53
 
-getIMVBMV :: IO (Either String Float)
+getIMVBMV :: RocConfig -> IO (Either String Float)
 getIMVBMV = runGetDataPoint 47 0 16
 
-getPressureExtensionUncorrectedFlowRate :: IO (Either String Float)
+getPressureExtensionUncorrectedFlowRate :: RocConfig -> IO (Either String Float)
 getPressureExtensionUncorrectedFlowRate = runGetDataPoint 47 0 4
 
-getFlowRatePerDay :: IO (Either String Float)
+getFlowRatePerDay :: RocConfig -> IO (Either String Float)
 getFlowRatePerDay = runGetDataPoint 47 0 0
 
-getEnergyRatePerDay :: IO (Either String Float)
+getEnergyRatePerDay :: RocConfig -> IO (Either String Float)
 getEnergyRatePerDay = runGetDataPoint 47 0 1
 -----------------------------------------------------------------------------------------------
 
@@ -69,9 +69,9 @@ getEnergyRatePerDay = runGetDataPoint 47 0 1
 ---- PointType = Word8 and is associated with things like Discrete Outputs, Analog Inputs, Meter Flow Values, etc.
 ---- PointNumber = Word8 and (also called Logical Number) is associated with which PointType you wish to talk like Analog Input 1, AnalogInput 2, Analog Input 3, etc. (it is 0 based so Analog Input 1 = Word8 0
 -- ParameterNumber = Word8 and is associated with which parameter you wish to retrieve from the PointType and PointNumber
-runGetDataPoint :: RocType a => PointType -> PointNumber -> ParameterNumber -> IO (Either String a)
-runGetDataPoint pointtype pointnumber parameternumber = do
-  responsebytes <- runOpCodeRaw testRocConfig (opCode167 pointtype pointnumber 1 parameternumber)
+runGetDataPoint :: RocType a => PointType -> PointNumber -> ParameterNumber -> RocConfig -> IO (Either String a)
+runGetDataPoint pointtype pointnumber parameternumber rocConfig = do
+  responsebytes <- runOpCodeRaw rocConfig (opCode167 pointtype pointnumber 1 parameternumber)
   if checkCRC16 (IStrictBS responsebytes) standardConfig
   then case runGet parseResponse responsebytes of
          Left err -> return $ Left err
